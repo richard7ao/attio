@@ -85,10 +85,11 @@ plan to wire it all into one system. Written after reviewing every branch/commit
 - [x] API verified against Supabase: `/companies/churn` (117), `/triage/risk`,
       brief pipeline (postgres read path) all working.
 - [x] WF-3 dashboard queries smoke-tested directly against Supabase — work as-is.
-- [ ] ⚠️ **`packages/db/supabase/voice.sql` cannot be applied as-is**: it FKs to
-      `public.profiles(id)` (Supabase-auth convention) which our schema doesn't
-      have (we use `users`). **Reconciliation needed** by the voice owner — point
-      it at our `users` table, or add a `profiles` table/view + `uuid-ossp`.
+- [x] ✅ **`packages/db/supabase/voice.sql` reconciled & applied**: FK repointed
+      `profiles(id)` → `public.users(id)`, `uuid_generate_v4()` → `gen_random_uuid()`
+      (no extension). `voice_calls` + `voice_transcript_segments` created on
+      Supabase; a demo owner is seeded and `DEMO_USER_ID` defaulted to it. Verified
+      a voice_calls insert round-trips against the FK.
 
 ### Phase 2 — Emit churn events from our API ✅ DONE
 - [x] `N8N_WEBHOOK_BASE_URL` added to config/env.

@@ -1,7 +1,11 @@
--- Attio — Voice outreach schema (additive to schema.sql)
--- Run AFTER schema.sql. Owns the detail of voice-agent calls placed via SLNG.
--- Each call also gets a row in public.outreach (channel='voice') so it shows up
--- in the unified team dashboard; voice_calls.outreach_id links the two.
+-- Attio — Voice outreach schema (additive to the Drizzle-managed core schema)
+-- Owns the detail of voice-agent calls placed via SLNG. Each call also gets a
+-- row in public.outreach (channel='voice') so it shows up in the unified team
+-- dashboard; voice_calls.outreach_id links the two.
+--
+-- Reconciled to the core schema: user_id FKs public.users(id) (not profiles),
+-- and uses gen_random_uuid() (built-in, no uuid-ossp extension required).
+-- Safe to run on its own and re-run (idempotent).
 
 -- ============================================================================
 -- Enums
@@ -29,8 +33,8 @@ exception when duplicate_object then null; end $$;
 -- voice_calls — one row per outbound call
 -- ============================================================================
 create table if not exists public.voice_calls (
-  id                 uuid primary key default uuid_generate_v4(),
-  user_id            uuid not null references public.profiles(id) on delete cascade,
+  id                 uuid primary key default gen_random_uuid(),
+  user_id            uuid not null references public.users(id) on delete cascade,
   outreach_id        uuid references public.outreach(id) on delete set null,
 
   -- who / why
@@ -74,7 +78,7 @@ create unique index if not exists voice_calls_provider_call_uidx
 -- voice_transcript_segments — ordered conversation turns for a call
 -- ============================================================================
 create table if not exists public.voice_transcript_segments (
-  id          uuid primary key default uuid_generate_v4(),
+  id          uuid primary key default gen_random_uuid(),
   call_id     uuid not null references public.voice_calls(id) on delete cascade,
   seq         integer not null,                  -- monotonically increasing within a call
   speaker     public.voice_speaker not null,
@@ -126,3 +130,11 @@ $$;
 drop trigger if exists voice_calls_touch on public.voice_calls;
 create trigger voice_calls_touch before update on public.voice_calls
   for each row execute function public.touch_updated_at();
+
+-- ============================================================================
+-- Demo owner — lets the voice service create calls without a real auth user.
+-- Set DEMO_USER_ID in apps/backend/voice/.env to this id.
+-- ============================================================================
+insert into public.users (id, email, full_name, role)
+values ('00000000-0000-0000-0000-000000000001', 'demo@attio.local', 'Demo CSM', 'csm')
+on conflict (id) do nothing;
