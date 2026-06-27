@@ -100,13 +100,14 @@ export async function ackEscalation(escalationId: string): Promise<void> {
 }
 
 /**
- * Dispatch a voice call via the backend (placeholder route today).
+ * "Place Call" → triggers the WF-4 churn-rescue workflow in n8n (via the API),
+ * which builds the rescue plan and dispatches WF-6 → the SLNG voice service.
  * Swallows errors so the optimistic UI/toast still flows.
  */
 export async function placeVoiceCall(companyId: string): Promise<void> {
   try {
-    await api('/voice/call', { method: 'POST', body: JSON.stringify({ companyId }) });
+    await api('/rescue/call', { method: 'POST', body: JSON.stringify({ companyId }) });
   } catch {
-    // TODO(api): /voice/call is a stub; ignore until Twilio is wired server-side.
+    // best-effort: the call is fired async via n8n; keep the optimistic UI flowing.
   }
 }

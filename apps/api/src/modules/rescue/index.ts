@@ -4,6 +4,7 @@ import { attio } from '../attio/client.js';
 import { attioPushEnabled } from '../attio/push.js';
 import { buildRescueEvent } from './dispatch.js';
 import { generateAccountBrief } from '../analysis/brief.js';
+import { config } from '../../config.js';
 
 const outcomeBody = z.object({
   companyId: z.string().min(1),
@@ -43,5 +44,29 @@ export async function rescueRoutes(app: FastifyInstance): Promise<void> {
         .join('\n'),
     });
     return { ok: true, companyId, noteId: note.id.note_id };
+  });
+
+  // "Place Call" in the dashboard. Triggers the WF-4 churn-rescue workflow,
+  // which builds the rescue plan and (on the high-priority path) dispatches
+  // WF-6 -> the SLNG voice service to actually call the customer.
+  app.post('/rescue/call', async (request, reply) => {
+    const parsed = z
+      .object({ companyId: z.string().min(1).optional(), accountId: z.string().min(1).optional() })
+      .safeParse(request.body);
+    if (!parsed.success) return reply.badRequest(parsed.error.message);
+    const accountId = parsed.data.accountId ?? parsed.data.companyId;
+    if (!accountId) return reply.badRequest('companyId (account_id) is required');
+    if (!config.N8N_WEBHOOK_BASE_URL) {
+      return reply.serviceUnavailable('N8N_WEBHOOK_BASE_URL not configured');
+    }
+
+    const res = await fetch(`${config.N8N_WEBHOOK_BASE_URL}/webhook/churn-rescue/run`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ account_id: accountId }),
+    });
+    if (!res.ok) return reply.badGateway(`WF-4 trigger failed (${res.status})`);
+    const result = (await res.json().catch(() => ({}))) as unknown;
+    return { ok: true, triggered: 'WF-4', accountId, result };
   });
 }
