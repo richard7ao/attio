@@ -101,8 +101,7 @@
     },
     {
       "parameters": {
-        "respondWith": "json",
-        "responseBody": "={{ $json }}",
+        "respondWith": "allIncomingItems",
         "options": {}
       },
       "id": "7906ec42-91dc-4f25-bf27-5cb54686abf3",
@@ -292,7 +291,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "f1df8e39-73aa-43fc-90f5-09589cda30ef",
+  "versionId": "4f4c9f26-05cf-4229-8b03-90079fac231a",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "4f46209b245bfb1e262537ad2793f2caccc44ecfe3d895b0804365aaaa4f0984"
