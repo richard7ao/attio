@@ -22,7 +22,12 @@ export async function buildApp(): Promise<FastifyInstance> {
   });
 
   await app.register(sensible);
-  await app.register(cors, { origin: config.CORS_ORIGIN, credentials: true });
+  // CORS_ORIGIN='*' reflects any request origin (needed for deployed previews
+  // calling a tunneled API); otherwise lock to the configured origin.
+  await app.register(cors, {
+    origin: config.CORS_ORIGIN === '*' ? true : config.CORS_ORIGIN,
+    credentials: true,
+  });
   await app.register(dbPlugin);
 
   // Health is unprefixed; everything else lives under /api.

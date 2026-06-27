@@ -8,6 +8,11 @@ import { AccountsPage } from './cockpit/pages/AccountsPage.js';
 import { SignalsPage } from './cockpit/pages/SignalsPage.js';
 import { SettingsPage } from './cockpit/pages/SettingsPage.js';
 import { AccountProfilePage } from './cockpit/pages/AccountProfilePage.js';
+// Standalone operator pages (not part of the cockpit nav) — reachable by direct URL.
+import { Simulator } from './routes/Simulator.js';
+import { TriageBad } from './routes/TriageBad.js';
+import { TriageGood } from './routes/TriageGood.js';
+import { Dashboard as OpsDashboard } from './routes/Dashboard.js';
 
 export function App() {
   return (
@@ -22,6 +27,11 @@ export function App() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/account/:id" element={<AccountProfilePage />} />
         </Route>
+        {/* Standalone operator tools — direct URLs, intentionally not in the cockpit nav. */}
+        <Route path="/simulator" element={<Simulator />} />
+        <Route path="/triage/bad" element={<TriageBad />} />
+        <Route path="/triage/good" element={<TriageGood />} />
+        <Route path="/ops/dashboard" element={<OpsDashboard />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </CockpitProvider>

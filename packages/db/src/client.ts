@@ -12,10 +12,17 @@ export type Db = SqliteDb | PostgresDb;
  * Build a Drizzle client for the active driver. Driver libraries are loaded
  * lazily so dev installs never pay for the postgres driver (and vice versa).
  */
-export async function createDb(): Promise<Db> {
+async function buildDb(): Promise<Db> {
   if (getDatabaseDriver() === 'postgres') {
     const { default: postgres } = await import('postgres');
-    const client = postgres(getDatabaseUrl(), { prepare: false });
+    // Bounded pool: Supabase poolers cap client connections, so keep `max` low
+    // and release idle/old connections. `prepare:false` is required by the pooler.
+    const client = postgres(getDatabaseUrl(), {
+      prepare: false,
+      max: 5,
+      idle_timeout: 20,
+      max_lifetime: 60 * 30,
+    });
     return drizzlePg(client, { schema: pgSchema });
   }
 
@@ -28,4 +35,18 @@ export async function createDb(): Promise<Db> {
   sqlite.pragma('journal_mode = WAL');
   sqlite.pragma('foreign_keys = ON');
   return drizzleSqlite(sqlite, { schema: sqliteSchema });
+}
+
+let dbPromise: Promise<Db> | undefined;
+
+/**
+ * Process-wide singleton Drizzle client (one connection pool), built lazily.
+ *
+ * Critical for Postgres: callers invoke this on every query, so creating a new
+ * pool each time exhausts Supabase's pooler (EMAXCONNSESSION). Caching the
+ * in-flight promise also makes concurrent first-callers share one pool.
+ */
+export function createDb(): Promise<Db> {
+  dbPromise ??= buildDb();
+  return dbPromise;
 }
