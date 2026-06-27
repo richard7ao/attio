@@ -6,16 +6,23 @@
         "events": "workflow_call",
         "workflowInputs": {
           "values": [
-            { "name": "account_id" },
-            { "name": "action_id" }
+            {
+              "name": "account_id"
+            },
+            {
+              "name": "action_id"
+            }
           ]
         }
       },
-      "id": "fffca805-66d8-4a41-90fe-d5a5f791ab48",
+      "id": "77387112-008a-48b6-910e-299d6c78899e",
       "name": "Execute Workflow Trigger",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.2,
-      "position": [240, 592]
+      "position": [
+        -448,
+        0
+      ]
     },
     {
       "parameters": {
@@ -24,20 +31,15 @@
         "responseMode": "lastNode",
         "options": {}
       },
-      "id": "f21dad1b-0e95-47f2-a3ba-3732f019e4ce",
+      "id": "483ce661-1c5b-4577-9d88-8f0d2504c894",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
-      "position": [240, 784],
+      "position": [
+        -448,
+        608
+      ],
       "webhookId": "04d3bea4-3a33-4030-abcb-5425f2deb49d"
-    },
-    {
-      "parameters": {},
-      "id": "6c111fe5-41fd-469d-9801-8179056b0a06",
-      "name": "Merge Triggers",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [464, 688]
     },
     {
       "parameters": {
@@ -50,16 +52,21 @@
               "keyValue": "={{ $json.account_id ?? $json.body.account_id }}"
             }
           ]
-        },
-        "additionalFields": { "returnAll": false, "limit": 1 }
+        }
       },
-      "id": "d7e8f9a0-b1c2-3d4e-5f6a-7b8c9d0e1f2a",
+      "id": "7bf6ffc4-e408-436d-b38d-95d0006821b2",
       "name": "Fetch Account Details",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [688, 400],
+      "position": [
+        -224,
+        224
+      ],
       "credentials": {
-        "supabaseApi": { "id": "fe1RTg7V77HSHUQT", "name": "Supabase account" }
+        "supabaseApi": {
+          "id": "fe1RTg7V77HSHUQT",
+          "name": "Supabase account"
+        }
       }
     },
     {
@@ -73,16 +80,21 @@
               "keyValue": "={{ $json.account_id ?? $json.body.account_id }}"
             }
           ]
-        },
-        "additionalFields": { "returnAll": false, "limit": 1 }
+        }
       },
-      "id": "9836ad1f-2ae7-444d-94c0-e97fece37155",
+      "id": "f3154f62-4962-44d4-88f6-adc7e61432bb",
       "name": "Fetch CS Details",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [688, 592],
+      "position": [
+        -224,
+        416
+      ],
       "credentials": {
-        "supabaseApi": { "id": "fe1RTg7V77HSHUQT", "name": "Supabase account" }
+        "supabaseApi": {
+          "id": "fe1RTg7V77HSHUQT",
+          "name": "Supabase account"
+        }
       }
     },
     {
@@ -96,16 +108,21 @@
               "keyValue": "={{ $json.account_id ?? $json.body.account_id }}"
             }
           ]
-        },
-        "additionalFields": { "returnAll": false, "limit": 1 }
+        }
       },
-      "id": "96869bf2-acbb-4cba-af39-184c18d388e9",
+      "id": "a37ec153-d171-4a51-a10c-32fde9d951f8",
       "name": "Fetch Churn Status",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [688, 784],
+      "position": [
+        -224,
+        608
+      ],
       "credentials": {
-        "supabaseApi": { "id": "fe1RTg7V77HSHUQT", "name": "Supabase account" }
+        "supabaseApi": {
+          "id": "fe1RTg7V77HSHUQT",
+          "name": "Supabase account"
+        }
       }
     },
     {
@@ -118,18 +135,26 @@
               "keyName": "company_id",
               "keyValue": "={{ $json.account_id ?? $json.body.account_id }}"
             },
-            { "keyName": "type", "keyValue": "usage_drop" }
+            {
+              "keyName": "type",
+              "keyValue": "usage_drop"
+            }
           ]
-        },
-        "additionalFields": { "returnAll": false, "limit": 10 }
+        }
       },
-      "id": "0a43f21a-8f9d-4a6e-a72e-a49c6fd9879a",
+      "id": "cec3ee8d-77fc-416e-a52a-871c3b1f1564",
       "name": "Fetch Usage Signals",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [688, 976],
+      "position": [
+        -224,
+        800
+      ],
       "credentials": {
-        "supabaseApi": { "id": "fe1RTg7V77HSHUQT", "name": "Supabase account" }
+        "supabaseApi": {
+          "id": "fe1RTg7V77HSHUQT",
+          "name": "Supabase account"
+        }
       }
     },
     {
@@ -142,18 +167,26 @@
               "keyName": "company_id",
               "keyValue": "={{ $json.account_id ?? $json.body.account_id }}"
             },
-            { "keyName": "type", "keyValue": "support_ticket" }
+            {
+              "keyName": "type",
+              "keyValue": "support_ticket"
+            }
           ]
-        },
-        "additionalFields": { "returnAll": false, "limit": 5 }
+        }
       },
-      "id": "2052c339-e463-4209-9d83-38b6db1146eb",
+      "id": "76b31430-7eba-412a-b17d-abaecf09a862",
       "name": "Fetch Support Signals",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [688, 1168],
+      "position": [
+        -224,
+        992
+      ],
       "credentials": {
-        "supabaseApi": { "id": "fe1RTg7V77HSHUQT", "name": "Supabase account" }
+        "supabaseApi": {
+          "id": "fe1RTg7V77HSHUQT",
+          "name": "Supabase account"
+        }
       }
     },
     {
@@ -163,28 +196,33 @@
         "numberInputs": 5,
         "options": {}
       },
-      "id": "b1d9d4cf-09cb-4e24-90e5-47d7ecaa4196",
+      "id": "623da08d-ab2b-4128-b2fb-822019a41d5b",
       "name": "Merge Account Data",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
-      "position": [912, 784]
+      "position": [
+        0,
+        560
+      ]
     },
     {
       "parameters": {
         "jsCode": "const items = $input.all();\n\nconst company   = items[0].json;  // attio_companies\nconst csData    = items[1].json;  // attio_customer_success\nconst churn     = items[2].json;  // company_churn\n\nconst usageRows = (Array.isArray(items[3].json) ? items[3].json : [items[3].json])\n  .filter(r => r && r.company_id)\n  .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));\n\nconst suppRows = (Array.isArray(items[4].json) ? items[4].json : [items[4].json])\n  .filter(r => r && r.company_id)\n  .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));\n\nconst usageLatest  = usageRows[0]?.metadata?.usage_pct_after ?? usageRows[0]?.value ?? null;\nconst usageWeekAgo = usageRows[4]?.metadata?.usage_pct_after ?? usageRows[4]?.value ?? usageLatest;\nconst usageDrop    = typeof usageLatest === 'number' && typeof usageWeekAgo === 'number'\n  ? (usageWeekAgo - usageLatest).toFixed(1)\n  : 'unknown';\n\nconst lastContact = usageRows[0]?.created_at\n  ? `${Math.floor((Date.now() - new Date(usageRows[0].created_at)) / (1000*60*60*24))} days ago`\n  : 'never';\n\nconst negativeTickets = suppRows\n  .filter(t => t.metadata?.sentiment === 'negative')\n  .map(t => t.metadata?.subject ?? t.type)\n  .join('; ') || 'none';\n\nconst signalSummary = suppRows.length\n  ? suppRows.map(s =>\n      `[${s.source}] ${s.metadata?.description ?? s.metadata?.subject ?? s.type} (${s.metadata?.sentiment ?? 'neutral'})`\n    ).join('\\n')\n  : 'No recent support signals';\n\nreturn [{\n  json: {\n    account_id:            company.id,\n    company_name:          company.name ?? 'Unknown',\n    arr:                   csData.arr ?? 0,\n    plan_tier:             csData.stage ?? 'unknown',\n    cs_health:             csData.health ?? 'unknown',\n    cs_notes:              csData.notes ?? '',\n    renewal_date:          null,\n    days_to_renewal:       null,\n    primary_contact_name:  'N/A',\n    primary_contact_phone: 'N/A',\n    primary_contact_email: 'N/A',\n    owner_email:           'N/A',\n    rag_status:            churn.status ?? 'unknown',\n    health_score:          churn.score ?? 0,\n    churn_risk_flags:      churn.reason ?? 'none',\n    usage_latest:          usageLatest,\n    usage_drop:            usageDrop,\n    last_login:            usageRows[0]?.metadata?.last_login_at ?? 'unknown',\n    last_contact:          lastContact,\n    negative_tickets:      negativeTickets,\n    comms_summary:         signalSummary,\n  }\n}];"
       },
-      "id": "0e8fb00f-b871-49bb-b67c-5716c03e290b",
+      "id": "efe5ee0c-bb08-48ed-bb94-d17f940819a1",
       "name": "Build Context",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1136, 784]
+      "position": [
+        224,
+        608
+      ]
     },
     {
       "parameters": {
         "method": "POST",
         "url": "https://api.mubit.ai/v2/control/query",
         "sendHeaders": true,
-        "specifyHeaders": "keypair",
         "headerParameters": {
           "parameters": [
             {
@@ -202,29 +240,34 @@
         "jsonBody": "={{ { \"run_id\": $json.account_id, \"query\": \"Churn rescue lessons for a \" + $json.plan_tier + \" account with \" + $json.rag_status + \" churn status and ARR of $\" + $json.arr } }}",
         "options": {}
       },
-      "id": "e1f2a3b4-c5d6-7890-abcd-ef0123456789",
+      "id": "1777f0d0-787b-4171-9c88-05911450b8fa",
       "name": "Mubit — Recall Lessons",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
-      "position": [1360, 784],
+      "position": [
+        448,
+        608
+      ],
       "continueOnFail": true
     },
     {
       "parameters": {
         "jsCode": "// Merge Mubit recall result with the account context from Build Context.\n// Memory is best-effort: if Mubit failed or abstained, we proceed without lessons.\nconst mubitResult = $input.first().json;\nconst ctx = $('Build Context').first().json;\n\nlet lessons = null;\nif (\n  mubitResult.final_answer &&\n  !mubitResult.error &&\n  (mubitResult.confidence ?? 0) >= 0.2\n) {\n  lessons = mubitResult.final_answer;\n}\n\nconst systemPrompt =\n  'You are a senior enterprise customer success manager. ' +\n  'Analyse the at-risk account data below and respond ONLY with valid JSON matching the schema provided. ' +\n  'Be specific, actionable, and calibrate urgency to the churn signals.';\n\nconst accountBlock =\n  `Company: ${ctx.company_name}\\n` +\n  `ARR: $${ctx.arr}\\n` +\n  `Plan / Stage: ${ctx.plan_tier}\\n` +\n  `CRM Health: ${ctx.cs_health}\\n` +\n  `Renewal: ${ctx.days_to_renewal !== null ? ctx.days_to_renewal + ' days away' : 'date not available'}\\n` +\n  `Churn status: ${ctx.rag_status} (score: ${ctx.health_score}/100)\\n` +\n  `Churn reason on record: ${ctx.churn_risk_flags}\\n` +\n  `Usage drop (7-day): ${ctx.usage_drop}%\\n` +\n  `Latest usage value: ${ctx.usage_latest ?? 'no data'}\\n` +\n  `Last login: ${ctx.last_login}\\n` +\n  `Last contact: ${ctx.last_contact}\\n` +\n  `Negative support signals: ${ctx.negative_tickets}\\n` +\n  `Recent signals:\\n${ctx.comms_summary}\\n` +\n  `CS notes: ${ctx.cs_notes}\\n` +\n  `Primary contact: ${ctx.primary_contact_name}`;\n\nconst schemaBlock =\n  `Return ONLY valid JSON — no markdown fences:\\n` +\n  `{\\n` +\n  `  \"executive_summary\": \"2-3 sentence overview of churn risk and approach\",\\n` +\n  `  \"risk_factors\": [\"factor 1\", \"factor 2\"],\\n` +\n  `  \"account_plan\": [{\"action\": \"...\", \"owner\": \"CSM|AI|email\", \"timeline\": \"immediate|this week|this month\"}],\\n` +\n  `  \"call_script\": \"Full spoken-dialogue script: greeting, empathy, pain-point ack, value reminder, concrete offer, close\",\\n` +\n  `  \"objection_handling\": [{\"objection\": \"...\", \"response\": \"...\"}],\\n` +\n  `  \"email_draft\": \"Full follow-up email body\",\\n` +\n  `  \"success_metric\": \"Measurable outcome that defines rescue as successful\",\\n` +\n  `  \"priority\": \"high|medium|low\"\\n` +\n  `}`;\n\nconst userMessage = lessons\n  ? `Prior lessons from similar rescues:\\n${lessons}\\n\\n## ACCOUNT DATA\\n${accountBlock}\\n\\n## YOUR TASK\\n${schemaBlock}`\n  : `## ACCOUNT DATA\\n${accountBlock}\\n\\n## YOUR TASK\\n${schemaBlock}`;\n\nreturn [{\n  json: {\n    ...ctx,\n    had_mubit_lessons: !!lessons,\n    superlink_messages: [\n      { role: 'system', content: systemPrompt },\n      { role: 'user',   content: userMessage }\n    ]\n  }\n}];"
       },
-      "id": "a2b3c4d5-e6f7-8901-bcde-f01234567890",
+      "id": "12c61db7-fe7a-4dc2-8497-44c92e8d39cf",
       "name": "Prepare Superlink Prompt",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1584, 784]
+      "position": [
+        672,
+        608
+      ]
     },
     {
       "parameters": {
         "method": "POST",
         "url": "http://a64e1dc31032c40e4b1e9330a1273c83-1760332796.us-east-2.elb.amazonaws.com:8080/v1/chat/completions",
         "sendHeaders": true,
-        "specifyHeaders": "keypair",
         "headerParameters": {
           "parameters": [
             {
@@ -248,11 +291,14 @@
           "timeout": 60000
         }
       },
-      "id": "b3c4d5e6-f7a8-9012-cdef-012345678901",
+      "id": "bb58e1da-6ef5-4270-8c15-90f1849771f1",
       "name": "Superlink — Generate Plan",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
-      "position": [1808, 784],
+      "position": [
+        896,
+        608
+      ],
       "retryOnFail": true,
       "maxTries": 3,
       "waitBetweenTries": 2000
@@ -261,38 +307,76 @@
       "parameters": {
         "jsCode": "// Superlink returns OpenAI-compatible format: choices[0].message.content\nconst raw     = $input.first().json.choices[0].message.content;\nconst cleaned = raw.replace(/```json|```/g, '').trim();\nconst plan    = JSON.parse(cleaned);\nconst ctx     = $('Build Context').first().json;\n\nreturn [{\n  json: {\n    ...ctx,\n    executive_summary:  plan.executive_summary,\n    risk_factors:       plan.risk_factors,\n    account_plan:       plan.account_plan,\n    call_script:        plan.call_script,\n    objection_handling: plan.objection_handling,\n    email_draft:        plan.email_draft,\n    success_metric:     plan.success_metric,\n    priority:           plan.priority,\n  }\n}];"
       },
-      "id": "f8a9a902-47e0-4201-b256-6107859f7ffc",
+      "id": "128f4d14-c71a-4971-bed1-22d9353ebff4",
       "name": "Parse Superlink Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [2032, 784]
+      "position": [
+        1120,
+        608
+      ]
     },
     {
       "parameters": {
-        "operation": "create",
         "tableId": "account_plans",
         "fieldsUi": {
           "fieldValues": [
-            { "fieldId": "account_id",         "fieldValue": "={{ $json.account_id }}" },
-            { "fieldId": "executive_summary",  "fieldValue": "={{ $json.executive_summary }}" },
-            { "fieldId": "risk_factors",       "fieldValue": "={{ $json.risk_factors }}" },
-            { "fieldId": "account_plan",       "fieldValue": "={{ $json.account_plan }}" },
-            { "fieldId": "call_script",        "fieldValue": "={{ $json.call_script }}" },
-            { "fieldId": "objection_handling", "fieldValue": "={{ $json.objection_handling }}" },
-            { "fieldId": "email_draft",        "fieldValue": "={{ $json.email_draft }}" },
-            { "fieldId": "success_metric",     "fieldValue": "={{ $json.success_metric }}" },
-            { "fieldId": "priority",           "fieldValue": "={{ $json.priority }}" },
-            { "fieldId": "generated_at",       "fieldValue": "={{ $now.toISO() }}" }
+            {
+              "fieldId": "account_id",
+              "fieldValue": "={{ $json.account_id }}"
+            },
+            {
+              "fieldId": "executive_summary",
+              "fieldValue": "={{ $json.executive_summary }}"
+            },
+            {
+              "fieldId": "risk_factors",
+              "fieldValue": "={{ $json.risk_factors }}"
+            },
+            {
+              "fieldId": "account_plan",
+              "fieldValue": "={{ $json.account_plan }}"
+            },
+            {
+              "fieldId": "call_script",
+              "fieldValue": "={{ $json.call_script }}"
+            },
+            {
+              "fieldId": "objection_handling",
+              "fieldValue": "={{ $json.objection_handling }}"
+            },
+            {
+              "fieldId": "email_draft",
+              "fieldValue": "={{ $json.email_draft }}"
+            },
+            {
+              "fieldId": "success_metric",
+              "fieldValue": "={{ $json.success_metric }}"
+            },
+            {
+              "fieldId": "priority",
+              "fieldValue": "={{ $json.priority }}"
+            },
+            {
+              "fieldId": "generated_at",
+              "fieldValue": "={{ $now.toISO() }}"
+            }
           ]
         }
       },
-      "id": "f2d7477a-b488-4a2d-b1a8-65ff7eee6f7e",
+      "id": "84ebe05c-7b3a-407a-825f-ae8eab099850",
       "name": "Save Account Plan",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [2256, 784],
+      "position": [
+        1344,
+        608
+      ],
       "credentials": {
-        "supabaseApi": { "id": "fe1RTg7V77HSHUQT", "name": "Supabase account" }
+        "supabaseApi": {
+          "id": "fe1RTg7V77HSHUQT",
+          "name": "Supabase account"
+        }
       }
     },
     {
@@ -310,39 +394,32 @@
         "includeOtherFields": true,
         "options": {}
       },
-      "id": "cca659d4-4013-47b3-a40a-0a74a78a2d9a",
+      "id": "dc0b13f4-9aa0-42ef-bc2a-5424cf54f30e",
       "name": "Attach Plan ID",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [2480, 784]
+      "position": [
+        1568,
+        608
+      ]
     },
     {
       "parameters": {
-        "operation": "upsert",
-        "tableId": "churn_rescue_queue",
-        "fieldsUi": {
-          "fieldValues": [
-            { "fieldId": "account_id",      "fieldValue": "={{ $json.account_id }}" },
-            { "fieldId": "company_name",    "fieldValue": "={{ $json.company_name }}" },
-            { "fieldId": "arr",             "fieldValue": "={{ $json.arr }}" },
-            { "fieldId": "rag_status",      "fieldValue": "={{ $json.rag_status }}" },
-            { "fieldId": "priority",        "fieldValue": "={{ $json.priority }}" },
-            { "fieldId": "days_to_renewal", "fieldValue": "={{ $json.days_to_renewal }}" },
-            { "fieldId": "usage_latest",    "fieldValue": "={{ $json.usage_latest }}" },
-            { "fieldId": "last_contact",    "fieldValue": "={{ $json.last_contact }}" },
-            { "fieldId": "plan_id",         "fieldValue": "={{ $json.plan_id }}" },
-            { "fieldId": "status",          "fieldValue": "pending" },
-            { "fieldId": "updated_at",      "fieldValue": "={{ $now.toISO() }}" }
-          ]
-        }
+        "operation": "upsert"
       },
-      "id": "aa4f7b7e-3b8c-42cc-ac1c-eeb3d1764e9b",
+      "id": "4564e7a7-c304-4360-80b6-c09f6c0c5b01",
       "name": "Write to Churn Queue",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [2704, 784],
+      "position": [
+        1792,
+        608
+      ],
       "credentials": {
-        "supabaseApi": { "id": "fe1RTg7V77HSHUQT", "name": "Supabase account" }
+        "supabaseApi": {
+          "id": "fe1RTg7V77HSHUQT",
+          "name": "Supabase account"
+        }
       }
     },
     {
@@ -351,11 +428,19 @@
           "values": [
             {
               "conditions": {
-                "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict", "version": 1 },
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
                 "conditions": [
                   {
                     "leftValue": "={{ $json.priority }}",
-                    "operator": { "type": "string", "operation": "equals" },
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
                     "rightValue": "high"
                   }
                 ],
@@ -364,11 +449,19 @@
             },
             {
               "conditions": {
-                "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict", "version": 1 },
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
                 "conditions": [
                   {
                     "leftValue": "={{ $json.priority }}",
-                    "operator": { "type": "string", "operation": "equals" },
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
                     "rightValue": "medium"
                   }
                 ],
@@ -382,34 +475,43 @@
           "renameFallbackOutput": "low"
         }
       },
-      "id": "084fbc30-95f8-42c9-89d0-e24de338d501",
+      "id": "2c8521d3-2c7d-4af2-91c4-3e6bd0a36655",
       "name": "Route by Priority",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
-      "position": [2928, 784]
+      "position": [
+        2016,
+        592
+      ]
     },
     {
       "parameters": {
-        "workflowId": { "__rl": true, "mode": "list", "value": "" },
+        "workflowId": {
+          "__rl": true,
+          "value": "QR6TthLKGytCNLcE",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/QR6TthLKGytCNLcE",
+          "cachedResultName": "WF-6: Voice Agent API (Sling + Twilio)"
+        },
         "workflowInputs": {
           "mappingMode": "defineBelow",
-          "value": {
-            "account_id":         "={{ $json.account_id }}",
-            "plan_id":            "={{ $json.plan_id }}",
-            "call_script":        "={{ $json.call_script }}",
-            "objection_handling": "={{ $json.objection_handling }}",
-            "contact_phone":      "={{ $json.primary_contact_phone }}",
-            "contact_name":       "={{ $json.primary_contact_name }}",
-            "company_name":       "={{ $json.company_name }}"
-          }
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
         },
         "options": {}
       },
-      "id": "b0a7272b-8b4a-4b19-8a0b-00982aae60c4",
+      "id": "d031143d-faea-4361-bded-6aea3a987f7f",
       "name": "Trigger WF-6 Voice Call",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
-      "position": [3152, 608]
+      "position": [
+        2240,
+        416
+      ],
+      "disabled": true
     },
     {
       "parameters": {
@@ -420,35 +522,46 @@
         "text": "=Hi,\n\n{{ $json.company_name }} (ARR: ${{ $json.arr }}) has been flagged as churn risk.\n\nSummary:\n{{ $('Parse Superlink Response').item.json.executive_summary }}\n\nPriority: {{ $json.priority }}\nChurn status: {{ $json.rag_status }}\nRenewal in: {{ $json.days_to_renewal !== null ? ($json.days_to_renewal + ' days') : 'unknown' }}\n\nView the full account plan and call script in the dashboard.",
         "options": {}
       },
-      "id": "268c1cae-c373-4084-a538-ee0723f69f53",
+      "id": "42aa0b8f-16ba-4c25-9070-a9cc00439976",
       "name": "Notify Account Owner",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
-      "position": [3152, 784],
-      "webhookId": "8b9ceb8c-96ec-4693-a551-a238c54aeffa"
+      "position": [
+        2240,
+        608
+      ],
+      "webhookId": "8b9ceb8c-96ec-4693-a551-a238c54aeffa",
+      "disabled": true
     },
     {
       "parameters": {},
-      "id": "85eabdcf-556e-4aa2-9279-5d59be5601b7",
+      "id": "f6812dc5-e2eb-47ea-83ef-793b24ead4d9",
       "name": "Low Priority (Queue Only)",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
-      "position": [3152, 976]
+      "position": [
+        2240,
+        800
+      ]
     },
     {
-      "parameters": { "numberInputs": 3 },
-      "id": "95ba8231-4ab4-489c-bbfe-81d1a51c4bae",
+      "parameters": {
+        "numberInputs": 3
+      },
+      "id": "0a0fdbe2-f796-4dcb-a06e-c8c417a03ff6",
       "name": "Merge All Paths",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
-      "position": [3376, 784]
+      "position": [
+        2464,
+        592
+      ]
     },
     {
       "parameters": {
         "method": "POST",
         "url": "https://api.mubit.ai/v2/control/ingest",
         "sendHeaders": true,
-        "specifyHeaders": "keypair",
         "headerParameters": {
           "parameters": [
             {
@@ -466,34 +579,34 @@
         "jsonBody": "={{ { \"run_id\": $('Build Context').item.json.account_id, \"agent_id\": \"head-of-data\", \"items\": [{ \"item_id\": \"rescue-\" + Date.now(), \"content_type\": \"text\", \"intent\": \"lesson\", \"content\": \"Account \" + $('Build Context').item.json.company_name + \" (\" + $('Build Context').item.json.plan_tier + \", ARR $\" + $('Build Context').item.json.arr + \", status: \" + $('Build Context').item.json.rag_status + \") — Priority: \" + $('Parse Superlink Response').item.json.priority + \" — \" + $('Parse Superlink Response').item.json.executive_summary }] } }}",
         "options": {}
       },
-      "id": "c4d5e6f7-a8b9-0123-defa-123456789012",
+      "id": "4d768be7-33d1-4c54-9024-c3dbbbf76ce2",
       "name": "Mubit — Remember Outcome",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
-      "position": [3600, 784],
+      "position": [
+        2688,
+        608
+      ],
       "continueOnFail": true
     },
     {
       "parameters": {
-        "workflowId": { "__rl": true, "mode": "list", "value": "" },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "account_id": "={{ $('Build Context').item.json.account_id }}",
-            "plan_id":    "={{ $('Attach Plan ID').item.json.plan_id }}",
-            "event":      "churn_rescue_plan_generated",
-            "channel":    "system",
-            "summary":    "={{ $('Parse Superlink Response').item.json.executive_summary }}",
-            "sentiment":  "neutral"
-          }
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
         },
         "options": {}
       },
-      "id": "4f286dcc-32aa-4c22-8e58-43041fd73410",
+      "id": "266b4583-276c-4153-8681-501803efef30",
       "name": "Log to WF-7",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
-      "position": [3824, 784]
+      "position": [
+        2912,
+        608
+      ],
+      "disabled": true
     },
     {
       "parameters": {
@@ -501,109 +614,311 @@
         "responseBody": "={{ { \"success\": true, \"plan_id\": $('Attach Plan ID').item.json.plan_id, \"priority\": $('Parse Superlink Response').item.json.priority, \"executive_summary\": $('Parse Superlink Response').item.json.executive_summary } }}",
         "options": {}
       },
-      "id": "7e85ec9f-dcaf-47fb-9eda-d09a437dcc0c",
+      "id": "6fe432af-1737-4a47-9d0d-c8b5c522c13a",
       "name": "Respond to Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
-      "position": [4048, 784]
+      "position": [
+        3136,
+        608
+      ]
     }
   ],
   "pinData": {},
   "connections": {
     "Execute Workflow Trigger": {
-      "main": [[{ "node": "Merge Triggers", "type": "main", "index": 0 }]]
+      "main": [
+        []
+      ]
     },
     "Webhook": {
-      "main": [[{ "node": "Merge Triggers", "type": "main", "index": 1 }]]
-    },
-    "Merge Triggers": {
-      "main": [[
-        { "node": "Fetch Account Details", "type": "main", "index": 0 },
-        { "node": "Fetch CS Details",      "type": "main", "index": 0 },
-        { "node": "Fetch Churn Status",    "type": "main", "index": 0 },
-        { "node": "Fetch Usage Signals",   "type": "main", "index": 0 },
-        { "node": "Fetch Support Signals", "type": "main", "index": 0 }
-      ]]
+      "main": [
+        [
+          {
+            "node": "Fetch Account Details",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch CS Details",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Churn Status",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Usage Signals",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Support Signals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Fetch Account Details": {
-      "main": [[{ "node": "Merge Account Data", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Merge Account Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Fetch CS Details": {
-      "main": [[{ "node": "Merge Account Data", "type": "main", "index": 1 }]]
+      "main": [
+        [
+          {
+            "node": "Merge Account Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
     },
     "Fetch Churn Status": {
-      "main": [[{ "node": "Merge Account Data", "type": "main", "index": 2 }]]
+      "main": [
+        [
+          {
+            "node": "Merge Account Data",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
     },
     "Fetch Usage Signals": {
-      "main": [[{ "node": "Merge Account Data", "type": "main", "index": 3 }]]
+      "main": [
+        [
+          {
+            "node": "Merge Account Data",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
     },
     "Fetch Support Signals": {
-      "main": [[{ "node": "Merge Account Data", "type": "main", "index": 4 }]]
+      "main": [
+        [
+          {
+            "node": "Merge Account Data",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
     },
     "Merge Account Data": {
-      "main": [[{ "node": "Build Context", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Build Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Build Context": {
-      "main": [[{ "node": "Mubit — Recall Lessons", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Mubit — Recall Lessons",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Mubit — Recall Lessons": {
-      "main": [[{ "node": "Prepare Superlink Prompt", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Prepare Superlink Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Prepare Superlink Prompt": {
-      "main": [[{ "node": "Superlink — Generate Plan", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Superlink — Generate Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Superlink — Generate Plan": {
-      "main": [[{ "node": "Parse Superlink Response", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Parse Superlink Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Parse Superlink Response": {
-      "main": [[{ "node": "Save Account Plan", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Save Account Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Save Account Plan": {
-      "main": [[{ "node": "Attach Plan ID", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Attach Plan ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Attach Plan ID": {
-      "main": [[{ "node": "Write to Churn Queue", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Write to Churn Queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Write to Churn Queue": {
-      "main": [[{ "node": "Route by Priority", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Route by Priority",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Route by Priority": {
       "main": [
-        [{ "node": "Trigger WF-6 Voice Call",  "type": "main", "index": 0 }],
-        [{ "node": "Notify Account Owner",      "type": "main", "index": 0 }],
-        [{ "node": "Low Priority (Queue Only)", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Trigger WF-6 Voice Call",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Account Owner",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Low Priority (Queue Only)",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Trigger WF-6 Voice Call": {
-      "main": [[{ "node": "Merge All Paths", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Merge All Paths",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Notify Account Owner": {
-      "main": [[{ "node": "Merge All Paths", "type": "main", "index": 1 }]]
+      "main": [
+        [
+          {
+            "node": "Merge All Paths",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
     },
     "Low Priority (Queue Only)": {
-      "main": [[{ "node": "Merge All Paths", "type": "main", "index": 2 }]]
+      "main": [
+        [
+          {
+            "node": "Merge All Paths",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
     },
     "Merge All Paths": {
-      "main": [[{ "node": "Mubit — Remember Outcome", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Mubit — Remember Outcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Mubit — Remember Outcome": {
-      "main": [[{ "node": "Log to WF-7", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Log to WF-7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Log to WF-7": {
-      "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "1566f1bb-2a4e-4197-b0fc-12f8d6244e8a",
+  "versionId": "8a0e63ba-4ddf-42cb-8ee8-1aac4b495a5f",
   "meta": {
     "instanceId": "4f46209b245bfb1e262537ad2793f2caccc44ecfe3d895b0804365aaaa4f0984"
   },
   "nodeGroups": [],
-  "id": "s85yjuxXhCocfQnw",
+  "id": "2naYAx6JxZteZf0F",
   "tags": []
 }
