@@ -2,7 +2,7 @@
 # Runs TypeScript directly via tsx (no build step needed).
 # Docker context = repo root (set in render.yaml) for pnpm workspace install.
 
-FROM node:20-slim AS builder
+FROM node:22-slim AS builder
 
 RUN corepack enable
 
@@ -19,7 +19,7 @@ RUN pnpm install --frozen-lockfile --filter @attio/voice...
 COPY apps/backend/voice/ ./apps/backend/voice/
 
 # ---- Runtime ---------------------------------------------------------------
-FROM node:20-slim AS runtime
+FROM node:22-slim AS runtime
 
 WORKDIR /app/apps/backend/voice
 
