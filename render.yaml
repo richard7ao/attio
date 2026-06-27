@@ -73,11 +73,21 @@ services:
         value: https://uoejikumbmnjbbrvagsa.supabase.co
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
-      # Agent brain.
+      # Agent brain — Superlink (LLM) grounded by Mubit (durable memory).
       - key: AGENT_BRAIN
-        value: gemini
-      - key: GEMINI_API_KEY
+        value: superlink
+      - key: SUPERLINK_API_KEY
         sync: false
+      - key: SUPERLINK_BASE_URL
+        sync: false
+      - key: SUPERLINK_MODEL
+        value: Qwen/Qwen3-4B-Instruct-2507
+      - key: MUBIT_API_KEY
+        sync: false
+      - key: MUBIT_BASE_URL
+        value: https://api.mubit.ai
+      - key: MUBIT_AGENT
+        value: voice-account-manager
       # Demo user.
       - key: DEMO_USER_ID
         value: dfee371d-017a-48d1-8f62-d67465c59232
