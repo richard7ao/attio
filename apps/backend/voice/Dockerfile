@@ -28,6 +28,7 @@ COPY --from=builder /app/apps/backend/voice/node_modules/ ./node_modules/
 COPY --from=builder /app/node_modules/ /app/node_modules/
 
 ENV NODE_ENV=production
+# Render injects PORT automatically; the app reads it from env.
 EXPOSE 8787
 
 CMD ["npx", "tsx", "src/server.ts"]
