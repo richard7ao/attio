@@ -70,6 +70,10 @@ export const attioCompanies = sqliteTable('attio_companies', {
   id: text('id').primaryKey(), // Attio company record_id
   name: text('name'),
   domain: text('domain'),
+  // Stripe linkage (test mode): set when a company is linked to a Stripe
+  // customer + subscription so cancellations resolve back to this company.
+  stripeCustomerId: text('stripe_customer_id'),
+  stripeSubscriptionId: text('stripe_subscription_id'),
   syncedAt: text('synced_at').notNull().default(now),
 });
 

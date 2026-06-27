@@ -28,6 +28,9 @@ const envSchema = z.object({
   // Stripe
   STRIPE_API_KEY: optionalSecret,
   STRIPE_WEBHOOK_SECRET: optionalSecret,
+  // Recurring price used when linking Attio companies to Stripe (test mode).
+  // If unset, the link service creates a product + price on first use.
+  STRIPE_PRICE_ID: optionalSecret,
 
   // Analysis layer: Superlink (LLM provider) + Mubit (agent memory)
   SUPERLINK_API_KEY: optionalSecret,
