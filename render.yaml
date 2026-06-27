@@ -1,11 +1,13 @@
-# Render Blueprint — deploys the @attio/api Fastify service as a free-tier web
-# service.  One command:  render blueprint deploy
+# Render Blueprint — deploys the API + voice service as free-tier web services.
 #
 # After deploy:
 #   1. Set the secret env vars in the Render dashboard (see .env.example).
-#   2. Update VITE_API_BASE_URL on Vercel to the Render URL.
-#   3. Register Attio webhooks against the Render URL:
+#   2. Update VITE_API_BASE_URL on Vercel to the Render API URL.
+#   3. Register Attio webhooks against the Render API URL:
 #        pnpm --filter @attio/api register:attio-webhooks https://attio-api.onrender.com
+#   4. Set VOICE_BASE_URL on the API service to the voice service URL.
+#   5. Re-run upsert-agent with the voice service URL so SLNG knows the new webhook target:
+#        pnpm --filter @attio/voice upsert-agent
 services:
   - type: web
     name: attio-api
@@ -50,3 +52,38 @@ services:
         sync: false
       - key: VOICE_BASE_URL
         sync: false
+
+  - type: web
+    name: attio-voice
+    runtime: docker
+    plan: free
+    dockerfilePath: ./apps/backend/voice/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "8787"
+      # PUBLIC_BASE_URL = the Render URL of THIS service (set after first deploy).
+      - key: PUBLIC_BASE_URL
+        sync: false
+      # Supabase (voice service's own project).
+      - key: SUPABASE_URL
+        value: https://uoejikumbmnjbbrvagsa.supabase.co
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      # Agent brain.
+      - key: AGENT_BRAIN
+        value: gemini
+      - key: GEMINI_API_KEY
+        sync: false
+      # Demo user.
+      - key: DEMO_USER_ID
+        value: dfee371d-017a-48d1-8f62-d67465c59232
+      # SLNG.
+      - key: SLNG_API_KEY
+        sync: false
+      - key: SLNG_AGENT_ID
+        value: 0b105791-ce78-4adb-bedf-7e6ff2b64c2a
