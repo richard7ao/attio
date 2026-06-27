@@ -1,7 +1,12 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { stripeEnabled } from './client.js';
-import { cancelCompanySubscription, linkCompanies, listLinked } from './link.js';
+import {
+  cancelCompanySubscription,
+  linkCompanies,
+  linkCompanyById,
+  listLinked,
+} from './link.js';
 
 const linkBody = z.object({ limit: z.number().int().min(1).max(100).optional().default(10) });
 
@@ -20,6 +25,15 @@ export async function stripeRoutes(app: FastifyInstance): Promise<void> {
 
   // Companies currently linked to a Stripe subscription.
   app.get('/stripe/companies', async () => ({ data: await listLinked() }));
+
+  // Link one specific company to Stripe (create a real customer + subscription).
+  app.post('/stripe/companies/:id/link', async (request, reply) => {
+    if (!stripeEnabled()) return reply.serviceUnavailable('STRIPE_API_KEY not configured');
+    const { id } = request.params as { id: string };
+    const linked = await linkCompanyById(id);
+    if (!linked) return reply.notFound('Unknown company');
+    return { ok: true, linked };
+  });
 
   // Cancel a company's Stripe subscription (real Stripe action -> webhook).
   app.post('/stripe/companies/:id/cancel', async (request, reply) => {

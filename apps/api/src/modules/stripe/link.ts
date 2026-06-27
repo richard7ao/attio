@@ -100,6 +100,13 @@ export async function linkCompanyToStripe(company: StripeLink): Promise<LinkedCo
   };
 }
 
+/** Link one specific company to Stripe (create customer + subscription). */
+export async function linkCompanyById(companyId: string): Promise<LinkedCompany | null> {
+  const company = await getCompanyStripeIds(companyId);
+  if (!company) return null;
+  return linkCompanyToStripe(company);
+}
+
 /** Link up to `limit` not-yet-linked companies to Stripe. */
 export async function linkCompanies(limit: number): Promise<LinkedCompany[]> {
   const companies = await listCompaniesNeedingStripeLink(limit);

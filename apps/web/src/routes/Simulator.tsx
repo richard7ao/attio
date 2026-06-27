@@ -64,21 +64,33 @@ const btn = (primary = false): React.CSSProperties => ({
   cursor: 'pointer',
 });
 
+interface StripeLink {
+  companyId: string;
+  stripeCustomerId: string | null;
+  stripeSubscriptionId: string | null;
+}
+
+// Stripe test-mode dashboard (opens the real subscription in the Stripe playground).
+const stripeSubUrl = (subId: string) => `https://dashboard.stripe.com/test/subscriptions/${subId}`;
+
 export function Simulator() {
   const [companies, setCompanies] = useState<CompanyChurn[]>([]);
   const [escalations, setEscalations] = useState<Escalation[]>([]);
+  const [stripe, setStripe] = useState<Record<string, StripeLink>>({});
   const [filter, setFilter] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
   const [composeFor, setComposeFor] = useState<string | null>(null);
   const [ticketText, setTicketText] = useState('');
 
   const refresh = useCallback(async () => {
-    const [c, e] = await Promise.all([
+    const [c, e, s] = await Promise.all([
       api<{ data: CompanyChurn[] }>('/companies/churn'),
       api<{ data: Escalation[] }>('/escalations?status=red&unclaimed=true'),
+      api<{ data: StripeLink[] }>('/stripe/companies'),
     ]);
     setCompanies(c.data);
     setEscalations(e.data);
+    setStripe(Object.fromEntries(s.data.map((l) => [l.companyId, l])));
   }, []);
 
   useEffect(() => {
@@ -120,6 +132,34 @@ export function Simulator() {
     async (id: string) => {
       await api(`/escalations/${id}/ack`, { method: 'POST' });
       await refresh();
+    },
+    [refresh],
+  );
+
+  // Real Stripe: cancel an actual subscription (fires the Stripe webhook -> churn).
+  const cancelStripe = useCallback(
+    async (companyId: string) => {
+      setBusy(companyId);
+      try {
+        await api(`/stripe/companies/${companyId}/cancel`, { method: 'POST' });
+        setTimeout(() => void refresh(), 1500); // webhook drives the flip
+      } finally {
+        setBusy(null);
+      }
+    },
+    [refresh],
+  );
+
+  // Create a real Stripe customer + subscription for a company.
+  const linkStripe = useCallback(
+    async (companyId: string) => {
+      setBusy(companyId);
+      try {
+        await api(`/stripe/companies/${companyId}/link`, { method: 'POST' });
+        await refresh();
+      } finally {
+        setBusy(null);
+      }
     },
     [refresh],
   );
@@ -253,19 +293,34 @@ export function Simulator() {
                     <td style={{ padding: 8 }}>{c.name ?? c.companyId.slice(0, 8)}</td>
                     <td style={{ padding: 8 }}>{Math.round(c.score)}</td>
                     <td style={{ padding: 8 }}>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                        <button
-                          style={btn()}
-                          disabled={busy === c.companyId}
-                          onClick={() =>
-                            void sendSignal(c.companyId, {
-                              source: 'stripe',
-                              type: 'stripe_cancellation',
-                            })
-                          }
-                        >
-                          Stripe cancel
-                        </button>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+                        {stripe[c.companyId]?.stripeSubscriptionId ? (
+                          <>
+                            <button
+                              style={btn(true)}
+                              disabled={busy === c.companyId || c.status === 'red'}
+                              onClick={() => void cancelStripe(c.companyId)}
+                            >
+                              {c.status === 'red' ? 'cancelled' : 'Cancel subscription'}
+                            </button>
+                            <a
+                              href={stripeSubUrl(stripe[c.companyId]!.stripeSubscriptionId!)}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{ color: C.accent, fontSize: 12 }}
+                            >
+                              Stripe ↗
+                            </a>
+                          </>
+                        ) : (
+                          <button
+                            style={btn()}
+                            disabled={busy === c.companyId}
+                            onClick={() => void linkStripe(c.companyId)}
+                          >
+                            Link Stripe
+                          </button>
+                        )}
                         <button
                           style={btn()}
                           disabled={busy === c.companyId}

@@ -32,6 +32,10 @@ const envSchema = z.object({
   ATTIO_WEBHOOK_SECRET: optionalSecret,
   // Voice service base URL — the connector forwards "place a call" here.
   VOICE_BASE_URL: optionalSecret,
+  // Demo override: when set, syncAttio forces every contact's email/phone to
+  // these so all outreach (calls/email) routes to one inbox/number for the demo.
+  DEMO_CONTACT_EMAIL: optionalSecret,
+  DEMO_CONTACT_PHONE: optionalSecret,
 
   // Stripe
   STRIPE_API_KEY: optionalSecret,

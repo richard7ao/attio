@@ -1,4 +1,12 @@
-import { createDb, getDatabaseDriver, schema, type PostgresDb, type SqliteDb } from '@attio/db';
+import {
+  createDb,
+  getDatabaseDriver,
+  schema,
+  seedDemoContacts,
+  type PostgresDb,
+  type SqliteDb,
+} from '@attio/db';
+import { config } from '../../config.js';
 import { attio } from './client.js';
 import {
   mapCompany,
@@ -99,6 +107,12 @@ export async function syncAttio(): Promise<SyncResult> {
     await persistPostgres(db as PostgresDb, data);
   } else {
     persistSqlite(db as SqliteDb, data);
+  }
+
+  // Demo override: re-point every contact's email/phone to the demo identity so
+  // a sync never reverts outreach away from the demo inbox/number.
+  if (config.DEMO_CONTACT_EMAIL && config.DEMO_CONTACT_PHONE) {
+    await seedDemoContacts(config.DEMO_CONTACT_EMAIL, config.DEMO_CONTACT_PHONE);
   }
 
   return {
