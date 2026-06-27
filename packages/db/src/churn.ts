@@ -10,6 +10,7 @@ import {
   type SignalSource,
 } from '@attio/shared';
 import { and, desc, eq } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import { createDb, type PostgresDb, type SqliteDb } from './client.js';
 import { getDatabaseDriver } from './env.js';
 import * as pg from './schema/pg.js';
@@ -226,7 +227,22 @@ export async function listCompaniesWithChurn(): Promise<
       })
       .from(pg.attioCompanies)
       .leftJoin(pg.companyChurn, eq(pg.companyChurn.companyId, pg.attioCompanies.id));
-    return rows.map(map).sort((a, b) => b.score - a.score);
+    const mapped = rows.map(map).sort((a, b) => b.score - a.score);
+
+    // Override status to 'pending' for companies in the churn_rescue_queue
+    // with a post-call status (monitor / new_renewal). The voice service writes
+    // these after a call ends; the dashboard shows them in the Pending column.
+    const rescueRows = await (db as PostgresDb).execute(sql`
+      select account_id, status from public.churn_rescue_queue
+      where status in ('monitor', 'new_renewal')
+    `);
+    const rescueSet = new Set(rescueRows.map((r: any) => r.account_id));
+    for (const c of mapped) {
+      if (rescueSet.has(c.companyId)) {
+        c.status = 'pending';
+      }
+    }
+    return mapped;
   }
   const rows = (db as SqliteDb)
     .select({

@@ -45,10 +45,11 @@ export function deriveHealth(types: readonly SignalType[]): HealthTier {
   return 'green';
 }
 
-export const HEALTH_LABEL: Record<HealthTier, string> = {
+export const HEALTH_LABEL: Record<BoardTier, string> = {
   red: 'Churn Risk',
   amber: 'Investigate',
   green: 'Healthy',
+  pending: 'Pending - Monitoring',
 };
 
 /** How a detected signal surfaces in the comms timeline. */

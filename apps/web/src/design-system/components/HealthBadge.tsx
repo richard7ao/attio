@@ -12,6 +12,7 @@ const LABELS: Record<HealthStatus, string> = {
   red: 'Churn Risk',
   amber: 'Investigate',
   green: 'Healthy',
+  pending: 'Pending - Monitoring',
 };
 
 /** Health pill = dot + tier label, tinted. The primary way an account's RAG state is shown inline. */
@@ -28,6 +29,11 @@ export function HealthBadge({ status = 'green', label = null, pulse = false, sty
         bg: 'var(--rag-green-soft)',
         fg: 'var(--rag-green-text)',
         bd: 'var(--rag-green-border)',
+      },
+      pending: {
+        bg: 'var(--accent-soft)',
+        fg: 'var(--accent-text)',
+        bd: 'var(--accent-border)',
       },
     } as const)[status] || ({} as { bg?: string; fg?: string; bd?: string });
   return (

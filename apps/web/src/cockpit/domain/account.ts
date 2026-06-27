@@ -1,4 +1,4 @@
-import { deriveHealth, HEALTH_LABEL, signalDirection, signalSeverity, signalWeight, SIGNAL_TIMELINE, type HealthTier } from './health.js';
+import { deriveHealth, HEALTH_LABEL, signalDirection, signalSeverity, signalWeight, SIGNAL_TIMELINE, type HealthTier, type BoardTier } from './health.js';
 import { fmtArr, renewalDateLabel } from './format.js';
 import { type AccountInput, type AccountSignal, type AccountVM, type TimelineEntry } from './types.js';
 
@@ -13,7 +13,7 @@ function classifySignals(input: AccountInput['signals']): AccountSignal[] {
 
 /** Reconstruct the comms-history timeline for an account (agent action, signals, reminders, sync). */
 function buildTimeline(account: {
-  health: HealthTier;
+  health: BoardTier;
   owner: string;
   signals: AccountSignal[];
   contact: { name: string };
@@ -79,7 +79,9 @@ function buildTimeline(account: {
  */
 export function buildAccountVM(input: AccountInput, now: Date, attioSeq: number): AccountVM {
   const signals = classifySignals(input.signals);
-  const health = deriveHealth(signals.map((s) => s.type));
+  // Respect 'pending' from the churn API (post-call monitoring state);
+  // otherwise derive health from signals as before.
+  const health: BoardTier = input.health === 'pending' ? 'pending' : deriveHealth(signals.map((s) => s.type));
   const seatPct = input.seats > 0 ? Math.round((input.seatsUsed / input.seats) * 100) : 0;
   const first = input.usage[0] ?? 0;
   const last = input.usage[input.usage.length - 1] ?? 0;

@@ -1,4 +1,4 @@
-export type HealthStatus = 'red' | 'amber' | 'green';
+export type HealthStatus = 'red' | 'amber' | 'green' | 'pending';
 
 export interface HealthDotProps {
   status?: HealthStatus;
@@ -17,13 +17,14 @@ export function HealthDot({
   style = {},
 }: HealthDotProps) {
   const color =
-    ({ red: 'var(--rag-red)', amber: 'var(--rag-amber)', green: 'var(--rag-green)' } as const)[
+    ({ red: 'var(--rag-red)', amber: 'var(--rag-amber)', green: 'var(--rag-green)', pending: 'var(--accent)' } as const)[
       status
     ] || 'var(--rag-green)';
   const glowColor = ({
     red: 'var(--rag-red-glow)',
     amber: 'var(--rag-amber-glow)',
     green: 'var(--rag-green-glow)',
+    pending: 'var(--accent-soft)',
   } as const)[status];
   return (
     <span

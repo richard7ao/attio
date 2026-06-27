@@ -12,7 +12,7 @@ interface SortState {
   dir: SortDir;
 }
 
-const HEALTH_RANK: Record<AccountVM['health'], number> = { red: 0, amber: 1, green: 2 };
+const HEALTH_RANK: Record<AccountVM['health'], number> = { red: 0, amber: 1, pending: 2, green: 3 };
 
 const COLUMNS: { key: SortKey; label: string; align: 'left' | 'right' }[] = [
   { key: 'name', label: 'ACCOUNT', align: 'left' },

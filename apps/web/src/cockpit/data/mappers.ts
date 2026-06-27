@@ -1,5 +1,5 @@
 import { type SignalType } from '@attio/shared';
-import { type HealthTier } from '../domain/health.js';
+import { type HealthTier, type BoardTier } from '../domain/health.js';
 import { type AccountInput, type FeedIntent, type FeedSeed } from '../domain/types.js';
 
 /** Churn dashboard row — GET /api/companies/churn and /api/triage/risk. */
@@ -7,7 +7,7 @@ export interface ChurnRow {
   companyId: string;
   name: string;
   score: number;
-  status: HealthTier;
+  status: BoardTier;
   reason: string | null;
   escalationId?: string;
   acked?: boolean;
@@ -92,10 +92,13 @@ export function mapLiveAccounts(churn: ChurnRow[], opportunity: OpportunityRow[]
   const seen = new Set<string>();
   const inputs: AccountInput[] = [];
 
-  const push = (companyId: string, name: string | null, status: HealthTier, reason: string | null, arr: number) => {
+  const push = (companyId: string, name: string | null, status: BoardTier, reason: string | null, arr: number) => {
     if (seen.has(companyId)) return;
     seen.add(companyId);
-    const { seats, seatsUsed, usage } = deriveSeatsAndUsage(arr, status);
+    // 'pending' is a post-call monitoring state — derive seats/usage/signals
+    // as if amber, but set health to 'pending' so it lands in the Pending column.
+    const deriveTier: HealthTier = status === 'pending' ? 'amber' : status;
+    const { seats, seatsUsed, usage } = deriveSeatsAndUsage(arr, deriveTier);
     const opp = oppById.get(companyId);
     const safeName = name ?? 'Unknown';
     const slug = safeName.toLowerCase().replace(/[^a-z0-9]+/g, '') || 'account';
@@ -109,9 +112,10 @@ export function mapLiveAccounts(churn: ChurnRow[], opportunity: OpportunityRow[]
       seatsUsed,
       renewalDays: renewalDaysFrom(opp?.value),
       contact: { name: 'Account contact', title: 'Primary contact', phone: '—', email: `team@${slug}.com` },
-      signals: [{ type: signalForStatus(status, reason), note: reason ?? 'Signal detected by the engine', detected: 'live' }],
+      signals: [{ type: signalForStatus(deriveTier, reason), note: reason ?? 'Signal detected by the engine', detected: 'live' }],
       usage,
       expansion: status === 'green' ? Math.round((opp?.value ?? arr * 0.15)) : 0,
+      health: status,
     });
   };
 

@@ -39,6 +39,7 @@ export function AccountRow({
     red: 'var(--rag-red)',
     amber: 'var(--rag-amber)',
     green: 'var(--rag-green)',
+    pending: 'var(--accent)',
   } as const)[status];
   return (
     <div

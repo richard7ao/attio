@@ -118,7 +118,7 @@ export function AccountProfilePage() {
         <StatCard label="Annual Recurring" value={a.arrLabel} sub={a.mrrSub} />
         <StatCard label="Seat Capacity" value={a.seatPctLabel} sub={`${a.seatLabel} seats`} tone={capTone} />
         <StatCard label="Renewal" value={a.renewalShort} sub={a.renewalDate} tone={renewalTone} />
-        <StatCard label="Health" value={a.healthLabel} sub="derived from signals" tone={a.health} />
+        <StatCard label="Health" value={a.healthLabel} sub="derived from signals" tone={a.health === 'pending' ? 'accent' : a.health} />
       </div>
 
       {/* two-col */}

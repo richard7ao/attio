@@ -1,5 +1,5 @@
 import { type SignalDirection, type SignalSeverity, type SignalType } from '@attio/shared';
-import { type HealthTier } from './health.js';
+import { type HealthTier, type BoardTier } from './health.js';
 
 /** A signal as seeded/ingested, before classification metadata is attached. */
 export interface AccountSignalInput {
@@ -36,6 +36,8 @@ export interface AccountInput {
   signals: AccountSignalInput[];
   usage: number[];
   expansion: number;
+  /** Optional health override from the API (e.g. 'pending' for post-call monitoring). */
+  health?: BoardTier;
 }
 
 export interface TimelineEntry {
@@ -59,7 +61,7 @@ export interface AccountVM {
   renewalDays: number;
   expansion: number;
   usage: number[];
-  health: HealthTier;
+  health: BoardTier;
   arrLabel: string;
   mrrSub: string;
   seatPct: number;
