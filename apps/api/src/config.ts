@@ -31,9 +31,9 @@ const envSchema = z.object({
 
   // Analysis layer: Superlink (LLM provider) + Mubit (agent memory)
   SUPERLINK_API_KEY: optionalSecret,
-  // OpenAI-compatible chat base URL. *CHECK THIS* once the Superlink endpoint is confirmed.
+  // OpenAI-compatible chat base URL for the Superlinked SIE gateway (must end in /v1).
   SUPERLINK_BASE_URL: optionalSecret,
-  SUPERLINK_MODEL: z.string().default('gpt-4o-mini'),
+  SUPERLINK_MODEL: z.string().default('Qwen/Qwen3-4B-Instruct-2507'),
   MUBIT_API_KEY: optionalSecret,
   MUBIT_BASE_URL: z.string().default('https://api.mubit.ai'),
   MUBIT_AGENT: z.string().default('head-of-data'),
