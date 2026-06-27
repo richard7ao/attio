@@ -22,11 +22,15 @@ export async function buildApp(): Promise<FastifyInstance> {
   });
 
   await app.register(sensible);
-  // CORS_ORIGIN='*' reflects any request origin (needed for deployed previews
-  // calling a tunneled API); otherwise lock to the configured origin.
+  // CORS_ORIGIN may be '*' (deployed previews calling a tunneled API) or a
+  // comma-separated allowlist. Never reflect arbitrary origins *with*
+  // credentials — that lets any site make credentialed cross-origin calls — so
+  // wildcard mode disables credentials; the allowlist path keeps them.
+  const corsOrigins = config.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean);
+  const corsWildcard = corsOrigins.includes('*');
   await app.register(cors, {
-    origin: config.CORS_ORIGIN === '*' ? true : config.CORS_ORIGIN,
-    credentials: true,
+    origin: corsWildcard ? '*' : corsOrigins,
+    credentials: !corsWildcard,
   });
   await app.register(dbPlugin);
 

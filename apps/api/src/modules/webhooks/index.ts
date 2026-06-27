@@ -1,9 +1,22 @@
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import { companyIdByStripeCustomer, ingestSignal } from '@attio/db';
 import type { FastifyInstance } from 'fastify';
 import { config } from '../../config.js';
 import { generateAndSaveBrief } from '../analysis/brief.js';
 import { handleAttioEvents, type AttioEvent } from '../attio/connector.js';
 import { verifyStripeSignature } from '../stripe/client.js';
+
+/**
+ * Verify an inbound Attio webhook: HMAC-SHA256 of the exact raw body with the
+ * shared secret, hex-encoded, constant-time compared to `x-attio-signature`.
+ */
+function verifyAttioSignature(rawBody: string, signature: string | undefined, secret: string): boolean {
+  if (!signature) return false;
+  const expected = createHmac('sha256', secret).update(rawBody).digest('hex');
+  const a = Buffer.from(expected);
+  const b = Buffer.from(signature);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
 
 interface StripeEvent {
   type?: string;
@@ -80,6 +93,18 @@ export async function webhookRoutes(app: FastifyInstance): Promise<void> {
   // entries, churn-list status changes); we route them (track account / place call).
   app.post('/webhooks/attio', async (request, reply) => {
     const raw = (request.body as Buffer | undefined)?.toString('utf8') ?? '';
+
+    // Verify the signature when a secret is configured (mirrors the Stripe route).
+    // Without a secret (local dev) we log and proceed; any real deployment sets it.
+    if (config.ATTIO_WEBHOOK_SECRET) {
+      const sig = request.headers['x-attio-signature'] as string | undefined;
+      if (!verifyAttioSignature(raw, sig, config.ATTIO_WEBHOOK_SECRET)) {
+        return reply.unauthorized('Invalid Attio signature');
+      }
+    } else {
+      request.log.warn('ATTIO_WEBHOOK_SECRET not set — skipping signature verification');
+    }
+
     let payload: { events?: AttioEvent[] } & AttioEvent;
     try {
       payload = JSON.parse(raw);
