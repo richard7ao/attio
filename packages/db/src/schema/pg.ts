@@ -174,3 +174,33 @@ export const escalations = pgTable('escalations', {
   briefSource: text('brief_source'),
   briefGeneratedAt: timestamp('brief_generated_at', { withTimezone: true, mode: 'string' }),
 });
+
+// ---------------------------------------------------------------------------
+// Communication history. One row per touch (voice call, email, SMS, dashboard
+// action) written by the voice agent (WF-6) and comms logger (WF-7). The Call
+// Log page reads from here. `accountId` is an Attio company id (text), matching
+// the churn engine above. Keep in sync with sqlite.ts.
+// ---------------------------------------------------------------------------
+
+export const communications = pgTable('communications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  accountId: text('account_id').notNull(),
+  actionId: text('action_id'),
+  channel: text('channel', { enum: ['voice', 'email', 'sms', 'dashboard', 'manual'] }).notNull(),
+  direction: text('direction', { enum: ['inbound', 'outbound'] })
+    .notNull()
+    .default('outbound'),
+  status: text('status', {
+    enum: ['scheduled', 'initiated', 'live', 'completed', 'missed', 'failed', 'no_answer'],
+  })
+    .notNull()
+    .default('initiated'),
+  callSid: text('call_sid'),
+  durationSec: integer('duration_sec'),
+  summary: text('summary'),
+  sentiment: text('sentiment', { enum: ['positive', 'neutral', 'negative'] }),
+  transcript: text('transcript'),
+  outcome: text('outcome'),
+  occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
+  loggedAt: timestamp('logged_at', { withTimezone: true }).notNull().defaultNow(),
+});
