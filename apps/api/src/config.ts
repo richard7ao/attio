@@ -1,5 +1,8 @@
-import 'dotenv/config';
+import { config as loadEnv } from 'dotenv';
 import { z } from 'zod';
+
+// Single source of truth is the repo-root .env; allow an app-local override.
+loadEnv({ path: ['../../.env', '.env'] });
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -11,6 +14,10 @@ const envSchema = z.object({
   DATABASE_DRIVER: z.enum(['sqlite', 'postgres']).default('sqlite'),
   DATABASE_URL: z.string().optional(),
   SQLITE_PATH: z.string().default('./data/attio.local.db'),
+
+  // Attio CRM
+  ATTIO_API_KEY: z.string().min(1).optional(),
+  ATTIO_API_BASE_URL: z.string().url().default('https://api.attio.com/v2'),
 });
 
 /** Parsed, validated environment. Fails fast on misconfiguration. */

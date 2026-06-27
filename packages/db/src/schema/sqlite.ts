@@ -59,3 +59,54 @@ export const outreach = sqliteTable('outreach', {
   body: text('body'),
   createdAt: text('created_at').notNull().default(now),
 });
+
+// ---------------------------------------------------------------------------
+// Attio import/mirror layer. Raw data pulled from the Attio CRM API. Primary
+// keys are Attio's own record/entry ids (stored as text). Keep in sync with
+// schema/pg.ts.
+// ---------------------------------------------------------------------------
+
+export const attioCompanies = sqliteTable('attio_companies', {
+  id: text('id').primaryKey(), // Attio company record_id
+  name: text('name'),
+  domain: text('domain'),
+  syncedAt: text('synced_at').notNull().default(now),
+});
+
+export const attioPeople = sqliteTable('attio_people', {
+  id: text('id').primaryKey(), // Attio person record_id
+  name: text('name'),
+  email: text('email'),
+  companyId: text('company_id').references(() => attioCompanies.id),
+  jobTitle: text('job_title'),
+  phone: text('phone'),
+  syncedAt: text('synced_at').notNull().default(now),
+});
+
+export const attioWonContracts = sqliteTable('attio_won_contracts', {
+  entryId: text('entry_id').primaryKey(), // Attio list entry_id
+  companyId: text('company_id').references(() => attioCompanies.id),
+  contactId: text('contact_id').references(() => attioPeople.id),
+  ownerActorId: text('owner_actor_id'),
+  estimatedContractValue: real('estimated_contract_value'),
+  currencyCode: text('currency_code'),
+  priority: text('priority'),
+  projectedCloseDate: text('projected_close_date'),
+  wonAt: text('won_at'),
+  createdAt: text('created_at'),
+  syncedAt: text('synced_at').notNull().default(now),
+});
+
+export const attioCustomerSuccess = sqliteTable('attio_customer_success', {
+  entryId: text('entry_id').primaryKey(), // Attio list entry_id
+  companyId: text('company_id').references(() => attioCompanies.id),
+  stage: text('stage'),
+  onboardingStage: text('onboarding_stage'),
+  primaryCsmActorId: text('primary_csm_actor_id'),
+  arr: real('arr'),
+  arrCurrency: text('arr_currency'),
+  health: text('health'),
+  notes: text('notes'),
+  createdAt: text('created_at'),
+  syncedAt: text('synced_at').notNull().default(now),
+});

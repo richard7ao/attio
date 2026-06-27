@@ -16,7 +16,11 @@ async function main(): Promise<void> {
     const { default: Database } = await import('better-sqlite3');
     const { drizzle } = await import('drizzle-orm/better-sqlite3');
     const { migrate } = await import('drizzle-orm/better-sqlite3/migrator');
-    const sqlite = new Database(getSqlitePath());
+    const { mkdirSync } = await import('node:fs');
+    const { dirname } = await import('node:path');
+    const sqlitePath = getSqlitePath();
+    mkdirSync(dirname(sqlitePath), { recursive: true });
+    const sqlite = new Database(sqlitePath);
     migrate(drizzle(sqlite), { migrationsFolder: './migrations/sqlite' });
     sqlite.close();
   }

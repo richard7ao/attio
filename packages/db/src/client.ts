@@ -20,7 +20,11 @@ export async function createDb(): Promise<Db> {
   }
 
   const { default: Database } = await import('better-sqlite3');
-  const sqlite = new Database(getSqlitePath());
+  const { mkdirSync } = await import('node:fs');
+  const { dirname } = await import('node:path');
+  const sqlitePath = getSqlitePath();
+  mkdirSync(dirname(sqlitePath), { recursive: true });
+  const sqlite = new Database(sqlitePath);
   sqlite.pragma('journal_mode = WAL');
   sqlite.pragma('foreign_keys = ON');
   return drizzleSqlite(sqlite, { schema: sqliteSchema });

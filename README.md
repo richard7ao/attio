@@ -79,4 +79,33 @@ pnpm format       # prettier --write
 pnpm db:studio    # Drizzle Studio
 ```
 
+## Attio integration
+
+Pulls **won contracts** (the `sales` list, stage = Won), **customer-support
+accounts** (the `customer_success` list), and all **companies + people (users)**
+they reference into mirror tables: `attio_companies`, `attio_people`,
+`attio_won_contracts`, `attio_customer_success`.
+
+Set `ATTIO_API_KEY` in `.env`, then:
+
+### Local (SQLite)
+
+```bash
+pnpm db:migrate                      # DATABASE_DRIVER defaults to sqlite
+pnpm --filter @attio/api sync:attio  # fetch + upsert into data/attio.local.db
+```
+
+### Prod (Postgres / Supabase)
+
+```bash
+export DATABASE_DRIVER=postgres
+export DATABASE_URL=postgres://...   # Supabase connection string
+pnpm db:migrate
+pnpm --filter @attio/api sync:attio
+```
+
+Or hit the API: `POST /api/attio/sync`. Read endpoints:
+`GET /api/attio/won-contracts`, `GET /api/attio/customer-success`,
+`GET /api/attio/customer-success/users` (all users on customer-support accounts).
+
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for team conventions.

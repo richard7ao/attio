@@ -1,3 +1,6 @@
+import { existsSync } from 'node:fs';
+import { dirname, isAbsolute, resolve } from 'node:path';
+
 /**
  * Resolves which database driver to use.
  *   DATABASE_DRIVER=sqlite   -> local dev (better-sqlite3)
@@ -15,8 +18,24 @@ export function getDatabaseDriver(): DatabaseDriver {
   return driver;
 }
 
+/** Walk up from cwd to find the monorepo root (where pnpm-workspace.yaml lives). */
+function findRepoRoot(start = process.cwd()): string {
+  let dir = start;
+  for (;;) {
+    if (existsSync(resolve(dir, 'pnpm-workspace.yaml'))) return dir;
+    const parent = dirname(dir);
+    if (parent === dir) return start;
+    dir = parent;
+  }
+}
+
+/**
+ * Resolves the SQLite file. Relative paths anchor to the repo root so the same
+ * file is used no matter which package directory the command runs from.
+ */
 export function getSqlitePath(): string {
-  return process.env.SQLITE_PATH ?? './data/attio.local.db';
+  const path = process.env.SQLITE_PATH ?? './data/attio.local.db';
+  return isAbsolute(path) ? path : resolve(findRepoRoot(), path);
 }
 
 export function getDatabaseUrl(): string {

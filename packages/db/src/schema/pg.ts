@@ -67,3 +67,54 @@ export const outreach = pgTable('outreach', {
   body: text('body'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+// ---------------------------------------------------------------------------
+// Attio import/mirror layer. Raw data pulled from the Attio CRM API. Primary
+// keys are Attio's own record/entry ids (stored as text). Keep in sync with
+// schema/sqlite.ts.
+// ---------------------------------------------------------------------------
+
+export const attioCompanies = pgTable('attio_companies', {
+  id: text('id').primaryKey(), // Attio company record_id
+  name: text('name'),
+  domain: text('domain'),
+  syncedAt: timestamp('synced_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const attioPeople = pgTable('attio_people', {
+  id: text('id').primaryKey(), // Attio person record_id
+  name: text('name'),
+  email: text('email'),
+  companyId: text('company_id').references(() => attioCompanies.id),
+  jobTitle: text('job_title'),
+  phone: text('phone'),
+  syncedAt: timestamp('synced_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const attioWonContracts = pgTable('attio_won_contracts', {
+  entryId: text('entry_id').primaryKey(), // Attio list entry_id
+  companyId: text('company_id').references(() => attioCompanies.id),
+  contactId: text('contact_id').references(() => attioPeople.id),
+  ownerActorId: text('owner_actor_id'),
+  estimatedContractValue: doublePrecision('estimated_contract_value'),
+  currencyCode: text('currency_code'),
+  priority: text('priority'),
+  projectedCloseDate: text('projected_close_date'),
+  wonAt: timestamp('won_at', { withTimezone: true, mode: 'string' }),
+  createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }),
+  syncedAt: timestamp('synced_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const attioCustomerSuccess = pgTable('attio_customer_success', {
+  entryId: text('entry_id').primaryKey(), // Attio list entry_id
+  companyId: text('company_id').references(() => attioCompanies.id),
+  stage: text('stage'),
+  onboardingStage: text('onboarding_stage'),
+  primaryCsmActorId: text('primary_csm_actor_id'),
+  arr: doublePrecision('arr'),
+  arrCurrency: text('arr_currency'),
+  health: text('health'),
+  notes: text('notes'),
+  createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }),
+  syncedAt: timestamp('synced_at', { withTimezone: true }).notNull().defaultNow(),
+});

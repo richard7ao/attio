@@ -8,6 +8,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsup src/server.ts --format esm --target node20 --clean",
     "start": "node dist/server.js",
+    "sync:attio": "tsx src/scripts/sync-attio.ts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
@@ -19,6 +20,7 @@
     "@fastify/cors": "^10.0.1",
     "@fastify/sensible": "^6.0.1",
     "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.33.0",
     "fastify": "^5.0.0",
     "fastify-plugin": "^5.0.1",
     "zod": "^3.23.8"
