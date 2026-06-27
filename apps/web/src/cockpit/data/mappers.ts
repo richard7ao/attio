@@ -87,6 +87,14 @@ function renewalDaysFrom(value: number | null | undefined): number {
  * Merge the live dashboards into account inputs. `churn` carries health/reason;
  * `opportunity` contributes ARR and (when present) a positive renewal signal.
  */
+const CSM_NAMES = ['Sarah Chen', 'Marcus Reid', 'Priya Patel', 'James Okafor', 'Elena Rossi', 'David Kim'];
+
+function ownerFor(companyId: string): string {
+  let hash = 0;
+  for (let i = 0; i < companyId.length; i++) hash = (hash * 31 + companyId.charCodeAt(i)) | 0;
+  return CSM_NAMES[Math.abs(hash) % CSM_NAMES.length] ?? 'Unassigned';
+}
+
 export function mapLiveAccounts(churn: ChurnRow[], opportunity: OpportunityRow[]): AccountInput[] {
   const oppById = new Map(opportunity.map((o) => [o.companyId, o]));
   const seen = new Set<string>();
@@ -106,7 +114,7 @@ export function mapLiveAccounts(churn: ChurnRow[], opportunity: OpportunityRow[]
       id: companyId,
       name: safeName,
       domain: companyId.includes('.') ? companyId : `${slug}.com`,
-      owner: 'Unassigned',
+      owner: ownerFor(companyId),
       arr,
       seats,
       seatsUsed,
