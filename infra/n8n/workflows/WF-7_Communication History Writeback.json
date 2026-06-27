@@ -1,0 +1,88 @@
+{
+  "name": "WF-7: Communication History Writeback",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "f7000001-0000-4000-8000-000000000001",
+      "name": "When Called by WF-4/5/6b",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 460]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "p1", "name": "account_id", "value": "={{ $json.account_id }}", "type": "string" },
+            { "id": "p2", "name": "action_id", "value": "={{ $json.action_id }}", "type": "string" },
+            { "id": "p3", "name": "channel", "value": "={{ $json.channel || 'manual' }}", "type": "string" },
+            { "id": "p4", "name": "direction", "value": "={{ $json.direction || 'outbound' }}", "type": "string" },
+            { "id": "p5", "name": "summary", "value": "={{ ($json.summary || $json.event || '').toString().replace(/'/g, \"''\") }}", "type": "string" },
+            { "id": "p6", "name": "sentiment", "value": "={{ $json.sentiment || 'neutral' }}", "type": "string" },
+            { "id": "p7", "name": "transcript", "value": "={{ ($json.transcript || '').toString().replace(/'/g, \"''\") }}", "type": "string" },
+            { "id": "p8", "name": "outcome", "value": "={{ ($json.outcome || $json.event || '').toString().replace(/'/g, \"''\") }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f7000002-0000-4000-8000-000000000002",
+      "name": "Normalize Payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [470, 460]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO communications\n  (account_id, action_id, channel, direction, status, summary, sentiment, transcript, outcome, occurred_at, logged_at)\nVALUES\n  ('{{ $json.account_id }}',\n   NULLIF('{{ $json.action_id }}','')::text,\n   '{{ $json.channel }}',\n   '{{ $json.direction }}',\n   'completed',\n   '{{ $json.summary }}',\n   '{{ $json.sentiment }}',\n   NULLIF('{{ $json.transcript }}',''),\n   '{{ $json.outcome }}',\n   NOW(), NOW())",
+        "options": {}
+      },
+      "id": "f7000003-0000-4000-8000-000000000003",
+      "name": "Insert Communication",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [700, 460],
+      "credentials": { "postgres": { "id": "zQJjt8Ehxe7qmoRe", "name": "Postgres account" } }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose", "version": 2 },
+          "conditions": [
+            { "id": "n1", "leftValue": "={{ $json.sentiment }}", "rightValue": "negative", "operator": { "type": "string", "operation": "equals" } }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f7000004-0000-4000-8000-000000000004",
+      "name": "Sentiment Negative?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [930, 460]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE company_churn SET status='red', reason='Negative sentiment on last contact', updated_at=NOW()\nWHERE company_id='{{ $json.account_id }}'",
+        "options": {}
+      },
+      "id": "f7000005-0000-4000-8000-000000000005",
+      "name": "Flip Churn Red",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [1160, 380],
+      "credentials": { "postgres": { "id": "zQJjt8Ehxe7qmoRe", "name": "Postgres account" } }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Called by WF-4/5/6b": { "main": [[{ "node": "Normalize Payload", "type": "main", "index": 0 }]] },
+    "Normalize Payload": { "main": [[{ "node": "Insert Communication", "type": "main", "index": 0 }]] },
+    "Insert Communication": { "main": [[{ "node": "Sentiment Negative?", "type": "main", "index": 0 }]] },
+    "Sentiment Negative?": { "main": [[{ "node": "Flip Churn Red", "type": "main", "index": 0 }], []] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": []
+}

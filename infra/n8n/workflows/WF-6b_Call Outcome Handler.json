@@ -1,0 +1,224 @@
+{
+  "name": "WF-6b: Call Outcome Handler",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "call-outcome",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "b6b00001-0000-4000-8000-000000000001",
+      "name": "Webhook: Call Outcome",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [220, 520],
+      "webhookId": "c4a11ee0-0000-4000-9000-call-outcome01"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "f1", "name": "call_sid", "value": "={{ $json.body?.call_sid || $json.body?.CallSid }}", "type": "string" },
+            { "id": "f2", "name": "call_status", "value": "={{ ($json.body?.call_status || $json.body?.CallStatus || '').toLowerCase() }}", "type": "string" },
+            { "id": "f3", "name": "duration_sec", "value": "={{ Number($json.body?.duration || $json.body?.CallDuration || 0) }}", "type": "number" },
+            { "id": "f4", "name": "transcript", "value": "={{ $json.body?.transcript || '' }}", "type": "string" },
+            { "id": "f5", "name": "account_id", "value": "={{ $json.body?.account_id }}", "type": "string" },
+            { "id": "f6", "name": "action_id", "value": "={{ $json.body?.action_id }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b6b00002-0000-4000-8000-000000000002",
+      "name": "Normalize Callback",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [440, 520]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "typeValidation": "loose", "version": 2 },
+                "conditions": [
+                  { "id": "c1", "leftValue": "={{ $json.call_status }}", "rightValue": "completed", "operator": { "type": "string", "operation": "equals" } }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "typeValidation": "loose", "version": 2 },
+                "conditions": [
+                  { "id": "c2", "leftValue": "={{ $json.call_status }}", "rightValue": "no-answer", "operator": { "type": "string", "operation": "equals" } },
+                  { "id": "c3", "leftValue": "={{ $json.call_status }}", "rightValue": "busy", "operator": { "type": "string", "operation": "equals" } }
+                ],
+                "combinator": "or"
+              }
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "typeValidation": "loose", "version": 2 },
+                "conditions": [
+                  { "id": "c4", "leftValue": "={{ $json.call_status }}", "rightValue": "failed", "operator": { "type": "string", "operation": "equals" } }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b6b00003-0000-4000-8000-000000000003",
+      "name": "Route by Call Status",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [680, 520]
+    },
+    {
+      "parameters": {
+        "jsCode": "const j = $input.first().json;\nconst transcript = (j.transcript || '').toString();\nconst esc = (s) => s.replace(/'/g, \"''\");\nconst escalate = /speak to someone|manager|human|transfer/i.test(transcript);\nconst sentiment = /cancel|unhappy|disappointed|leaving/i.test(transcript) ? 'negative' : 'positive';\nreturn [{ json: { ...j, escalate, sentiment, summary: esc(transcript).slice(0, 300), transcript_sql: esc(transcript) } }];"
+      },
+      "id": "b6b00004-0000-4000-8000-000000000004",
+      "name": "Summarise Outcome",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [920, 360]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE communications SET\n  status='completed',\n  duration_sec=NULLIF('{{ $json.duration_sec }}','')::int,\n  transcript=NULLIF('{{ $json.transcript_sql }}',''),\n  sentiment='{{ $json.sentiment }}',\n  summary='{{ $json.summary }}',\n  outcome='completed',\n  logged_at=NOW()\nWHERE call_sid='{{ $json.call_sid }}'",
+        "options": {}
+      },
+      "id": "b6b00005-0000-4000-8000-000000000005",
+      "name": "Update Communication (completed)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [1160, 360],
+      "credentials": { "postgres": { "id": "zQJjt8Ehxe7qmoRe", "name": "Postgres account" } }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE escalations SET acked=true, acked_at=NOW()\nWHERE id='{{ $json.action_id }}'",
+        "options": {}
+      },
+      "id": "b6b00006-0000-4000-8000-000000000006",
+      "name": "Mark Escalation Done",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [1380, 360],
+      "credentials": { "postgres": { "id": "zQJjt8Ehxe7qmoRe", "name": "Postgres account" } }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose", "version": 2 },
+          "conditions": [
+            { "id": "s1", "leftValue": "={{ $json.sentiment }}", "rightValue": "negative", "operator": { "type": "string", "operation": "equals" } }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b6b00007-0000-4000-8000-000000000007",
+      "name": "Sentiment Negative?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1600, 360]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE company_churn SET status='red', reason='Negative call sentiment', updated_at=NOW()\nWHERE company_id='{{ $json.account_id }}'",
+        "options": {}
+      },
+      "id": "b6b00008-0000-4000-8000-000000000008",
+      "name": "Flip Churn Red",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [1820, 280],
+      "credentials": { "postgres": { "id": "zQJjt8Ehxe7qmoRe", "name": "Postgres account" } }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose", "version": 2 },
+          "conditions": [
+            { "id": "e1", "leftValue": "={{ $json.escalate }}", "rightValue": "", "operator": { "type": "boolean", "operation": "true", "singleValue": true } }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b6b00009-0000-4000-8000-000000000009",
+      "name": "Escalation Needed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1160, 560]
+    },
+    {
+      "parameters": {},
+      "id": "b6b0000a-0000-4000-8000-00000000000a",
+      "name": "Notify Account Owner (placeholder)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1380, 560]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE communications SET status='no_answer', outcome='no_answer', logged_at=NOW()\nWHERE call_sid='{{ $json.call_sid }}'",
+        "options": {}
+      },
+      "id": "b6b0000b-0000-4000-8000-00000000000b",
+      "name": "Mark No-Answer",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [920, 700],
+      "credentials": { "postgres": { "id": "zQJjt8Ehxe7qmoRe", "name": "Postgres account" } }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE communications SET status='failed', outcome='failed', logged_at=NOW()\nWHERE call_sid='{{ $json.call_sid }}'",
+        "options": {}
+      },
+      "id": "b6b0000c-0000-4000-8000-00000000000c",
+      "name": "Mark Failed",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [920, 860],
+      "credentials": { "postgres": { "id": "zQJjt8Ehxe7qmoRe", "name": "Postgres account" } }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook: Call Outcome": { "main": [[{ "node": "Normalize Callback", "type": "main", "index": 0 }]] },
+    "Normalize Callback": { "main": [[{ "node": "Route by Call Status", "type": "main", "index": 0 }]] },
+    "Route by Call Status": {
+      "main": [
+        [{ "node": "Summarise Outcome", "type": "main", "index": 0 }],
+        [{ "node": "Mark No-Answer", "type": "main", "index": 0 }],
+        [{ "node": "Mark Failed", "type": "main", "index": 0 }]
+      ]
+    },
+    "Summarise Outcome": {
+      "main": [[
+        { "node": "Update Communication (completed)", "type": "main", "index": 0 },
+        { "node": "Escalation Needed?", "type": "main", "index": 0 }
+      ]]
+    },
+    "Update Communication (completed)": { "main": [[{ "node": "Mark Escalation Done", "type": "main", "index": 0 }]] },
+    "Mark Escalation Done": { "main": [[{ "node": "Sentiment Negative?", "type": "main", "index": 0 }]] },
+    "Sentiment Negative?": { "main": [[{ "node": "Flip Churn Red", "type": "main", "index": 0 }], []] },
+    "Escalation Needed?": { "main": [[{ "node": "Notify Account Owner (placeholder)", "type": "main", "index": 0 }], []] },
+    "Mark Failed": { "main": [[{ "node": "Notify Account Owner (placeholder)", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": []
+}
