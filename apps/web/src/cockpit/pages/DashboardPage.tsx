@@ -14,7 +14,7 @@ const COLUMN_META: Record<BoardTier, { title: string; dot: string; soft: string;
   red: { title: 'Red - Churn Risk', dot: 'var(--rag-red)', soft: 'var(--rag-red-soft)', border: 'var(--rag-red-border)', text: 'var(--rag-red-text)' },
   amber: { title: 'Amber - Investigate', dot: 'var(--rag-amber)', soft: 'var(--rag-amber-soft)', border: 'var(--rag-amber-border)', text: 'var(--rag-amber-text)' },
   green: { title: 'Green - Healthy', dot: 'var(--rag-green)', soft: 'var(--rag-green-soft)', border: 'var(--rag-green-border)', text: 'var(--rag-green-text)' },
-  pending: { title: 'Pending - Awaiting Renewal', dot: 'var(--accent)', soft: 'var(--accent-soft)', border: 'var(--accent-border)', text: 'var(--accent-text)' },
+  pending: { title: 'Pending - Monitoring', dot: 'var(--accent)', soft: 'var(--accent-soft)', border: 'var(--accent-border)', text: 'var(--accent-text)' },
 };
 const TIERS: BoardTier[] = ['red', 'amber', 'green', 'pending'];
 

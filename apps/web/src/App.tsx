@@ -2,6 +2,9 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { CockpitProvider } from './cockpit/state/CockpitProvider.js';
 import { AppShell } from './cockpit/shell/AppShell.js';
 import { Landing } from './cockpit/pages/Landing.js';
+import { ProductPage } from './cockpit/pages/ProductPage.js';
+import { HowItWorksPage } from './cockpit/pages/HowItWorksPage.js';
+import { AttioPage } from './cockpit/pages/AttioPage.js';
 import { DashboardPage } from './cockpit/pages/DashboardPage.js';
 import { FeedPage } from './cockpit/pages/FeedPage.js';
 import { CallLogPage } from './cockpit/pages/CallLogPage.js';
@@ -20,6 +23,10 @@ export function App() {
     <CockpitProvider>
       <Routes>
         <Route path="/" element={<Landing />} />
+        {/* Public marketing pages (shared MarketingShell chrome, outside the cockpit). */}
+        <Route path="/product" element={<ProductPage />} />
+        <Route path="/how-it-works" element={<HowItWorksPage />} />
+        <Route path="/attio" element={<AttioPage />} />
         <Route element={<AppShell />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/feed" element={<FeedPage />} />
