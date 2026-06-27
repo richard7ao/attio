@@ -30,7 +30,7 @@ const FEATURES: { icon: string; title: string; body: string }[] = [
   {
     icon: 'plug',
     title: 'Wired Into Your Stack',
-    body: 'Attio is the source of truth. Stripe streams billing events, Twilio places calls, n8n runs the email workflows, and Sling routes the schedule.',
+    body: 'Attio is the source of truth. Stripe streams billing events, Twilio places calls, n8n runs the email workflows, and Slng routes the schedule.',
   },
 ];
 

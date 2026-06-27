@@ -65,7 +65,7 @@ export function AttioPage() {
       <section style={{ padding: '0 0 96px', textAlign: 'center' }}>
         <Eyebrow center>WIRED INTO YOUR STACK</Eyebrow>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginTop: 22 }}>
-          {['Attio', 'Stripe', 'Twilio', 'Sling', 'n8n'].map((name) => (
+          {['Attio', 'Stripe', 'Twilio', 'Slng', 'n8n'].map((name) => (
             <span
               key={name}
               style={{

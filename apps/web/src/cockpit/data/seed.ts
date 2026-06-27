@@ -311,7 +311,7 @@ export const INTEGRATIONS: Integration[] = [
   { key: 'attio', name: 'Attio', desc: 'CRM source of truth · customer sync', status: 'Connected' },
   { key: 'stripe', name: 'Stripe', desc: 'Billing & cancellation signals', status: 'Connected' },
   { key: 'twilio', name: 'Twilio', desc: 'Voice agent · outbound calls', status: 'Connected' },
-  { key: 'sling', name: 'Sling', desc: 'Call routing & scheduling', status: 'Available' },
+  { key: 'sling', name: 'Slng', desc: 'Call routing & scheduling', status: 'Available' },
   { key: 'n8n', name: 'n8n', desc: 'Email & workflow automation', status: 'Connected' },
 ];
 

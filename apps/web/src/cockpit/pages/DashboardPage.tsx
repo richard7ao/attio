@@ -47,10 +47,10 @@ export function DashboardPage() {
   return (
     <div style={{ maxWidth: 1700, padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
-        <StatCard label="ARR at Risk" value={arrAtRisk} delta="12% from last cycle" deltaDir="up" tone="red" icon={<Icon name="shield-alert" size={14} />} />
+        <StatCard label="ARR at Risk" value={arrAtRisk} sub="across churn-risk accounts" tone="red" icon={<Icon name="shield-alert" size={14} />} />
         <StatCard label="Upsell Pipeline" value={upsell} sub={`${oppCount} high-intent signals`} tone="green" icon={<Icon name="trending-up" size={14} />} />
         <StatCard label="Active Triage" value={String(triageCount)} sub="AI + human queue" tone="accent" icon={<Icon name="radar" size={14} />} />
-        <StatCard label="Calls Dispatched · 7d" value="37" sub="via Sling + Twilio" icon={<Icon name="phone-outgoing" size={14} />} />
+        <StatCard label="Calls Dispatched · 7d" value="37" sub="via Slng + Twilio" icon={<Icon name="phone-outgoing" size={14} />} />
       </div>
 
       <div>

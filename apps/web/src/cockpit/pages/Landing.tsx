@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Button, Icon } from '../../design-system/index.js';
+import { fmtArr } from '../domain/format.js';
+import { useCockpit } from '../state/CockpitProvider.js';
 
 const navLinkStyle = {
   font: 'var(--weight-medium) var(--text-sm)/1 var(--font-sans)',
@@ -64,6 +66,15 @@ export function Landing() {
   const navigate = useNavigate();
   const goDash = () => navigate('/dashboard');
   const goFeed = () => navigate('/feed');
+
+  // Preview tiles read the same derived data as the cockpit, not fixed numbers.
+  const { accounts } = useCockpit();
+  const byTier = (tier: 'red' | 'amber' | 'green') => accounts.filter((a) => a.health === tier);
+  const sumArr = (list: typeof accounts) => fmtArr(list.reduce((t, a) => t + a.arr, 0));
+  const red = byTier('red');
+  const amber = byTier('amber');
+  const green = byTier('green');
+  const upsell = fmtArr(accounts.reduce((t, a) => t + a.expansion, 0));
 
   return (
     <div style={{ position: 'relative', overflow: 'hidden' }}>
@@ -223,24 +234,24 @@ export function Landing() {
               border="var(--rag-red-border)"
               soft="var(--rag-red-soft)"
               text="var(--rag-red-text)"
-              label="CHURN RISK · 3"
-              value="$418k"
+              label={`CHURN RISK · ${red.length}`}
+              value={sumArr(red)}
               sub="ARR at risk"
             />
             <StatTile
               border="var(--rag-amber-border)"
               soft="var(--rag-amber-soft)"
               text="var(--rag-amber-text)"
-              label="INVESTIGATE · 4"
-              value="$643k"
+              label={`INVESTIGATE · ${amber.length}`}
+              value={sumArr(amber)}
               sub="under watch"
             />
             <StatTile
               border="var(--rag-green-border)"
               soft="var(--rag-green-soft)"
               text="var(--rag-green-text)"
-              label="HEALTHY · 5"
-              value="$313k"
+              label={`HEALTHY · ${green.length}`}
+              value={upsell}
               sub="upsell pipeline"
             />
           </div>
@@ -426,7 +437,7 @@ export function Landing() {
             <span style={pillStyle}>Attio</span>
             <span style={pillStyle}>Stripe</span>
             <span style={pillStyle}>Twilio</span>
-            <span style={pillStyle}>Sling</span>
+            <span style={pillStyle}>Slng</span>
             <span style={pillStyle}>n8n</span>
           </div>
         </section>
