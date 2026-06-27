@@ -49,14 +49,19 @@ async function get<T>(path: string): Promise<T[]> {
 }
 
 /** Write to an Attio endpoint (returns the single `data` object). */
-async function mutate<T>(method: 'POST' | 'PATCH' | 'PUT', path: string, body: unknown): Promise<T> {
+async function mutate<T>(
+  method: 'POST' | 'PATCH' | 'PUT' | 'DELETE',
+  path: string,
+  body: unknown,
+): Promise<T> {
   const res = await fetch(`${config.ATTIO_API_BASE_URL}${path}`, {
     method,
     headers: authHeaders(),
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new AttioError(`Attio ${res.status} on ${path}: ${await res.text()}`);
-  return (await res.json() as { data: T }).data;
+  const text = await res.text();
+  return (text ? (JSON.parse(text) as { data: T }).data : undefined) as T;
 }
 
 const PAGE_SIZE = 500;
@@ -106,6 +111,7 @@ export const attio = {
     queryAll<AttioListEntry>(`/lists/${list}/entries/query`, filter),
   listAttributeSlugs: async (object: string): Promise<string[]> =>
     (await get<{ api_slug: string }>(`/objects/${object}/attributes`)).map((a) => a.api_slug),
+  lists: () => get<{ id: { list_id: string }; api_slug: string; name: string }>(`/lists`),
   workspaceMemberIds: async (): Promise<string[]> =>
     (await get<{ id: { workspace_member_id: string } }>(`/workspace_members`)).map(
       (m) => m.id.workspace_member_id,
@@ -143,8 +149,26 @@ export const attio = {
         ],
       },
     }),
-  addListEntry: (list: string, parentRecordId: string, parentObject = 'companies') =>
+  addListEntry: (
+    list: string,
+    parentRecordId: string,
+    entryValues: Record<string, unknown> = {},
+    parentObject = 'companies',
+  ) =>
     mutate<{ id: { entry_id: string } }>('POST', `/lists/${list}/entries`, {
-      data: { parent_record_id: parentRecordId, parent_object: parentObject, entry_values: {} },
+      data: { parent_record_id: parentRecordId, parent_object: parentObject, entry_values: entryValues },
     }),
+  updateListEntry: (list: string, entryId: string, entryValues: Record<string, unknown>) =>
+    mutate<{ id: { entry_id: string } }>('PATCH', `/lists/${list}/entries/${entryId}`, {
+      data: { entry_values: entryValues },
+    }),
+
+  // --- webhooks (the Attio -> our API connector) ---
+  listWebhooks: () => get<{ id: { webhook_id: string }; target_url: string }>(`/webhooks`),
+  createWebhook: (targetUrl: string, subscriptions: { event_type: string; filter: unknown }[]) =>
+    mutate<{ id: { webhook_id: string }; secret: string }>('POST', `/webhooks`, {
+      data: { target_url: targetUrl, subscriptions },
+    }),
+  deleteWebhook: (webhookId: string) =>
+    mutate('DELETE', `/webhooks/${webhookId}`, undefined),
 };

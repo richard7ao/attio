@@ -2,6 +2,7 @@ import { companyIdByStripeCustomer, ingestSignal } from '@attio/db';
 import type { FastifyInstance } from 'fastify';
 import { config } from '../../config.js';
 import { generateAndSaveBrief } from '../analysis/brief.js';
+import { handleAttioEvents, type AttioEvent } from '../attio/connector.js';
 import { verifyStripeSignature } from '../stripe/client.js';
 
 interface StripeEvent {
@@ -73,6 +74,22 @@ export async function webhookRoutes(app: FastifyInstance): Promise<void> {
     });
     if (churn.escalated) await generateAndSaveBrief(churn.companyId);
     return { ok: true, churn };
+  });
+
+  // Attio -> our API connector. Attio posts events (contract won, support-flow
+  // entries, churn-list status changes); we route them (track account / place call).
+  app.post('/webhooks/attio', async (request, reply) => {
+    const raw = (request.body as Buffer | undefined)?.toString('utf8') ?? '';
+    let payload: { events?: AttioEvent[] } & AttioEvent;
+    try {
+      payload = JSON.parse(raw);
+    } catch {
+      return reply.badRequest('Invalid JSON body');
+    }
+    // Attio may send {events:[...]}; tolerate a single-event body too.
+    const events = payload.events ?? (payload.event_type ? [payload] : []);
+    const result = await handleAttioEvents(events);
+    return { ok: true, ...result };
   });
 
   // *PLACEHOLDER* n8n automations -> usage/sentiment signals

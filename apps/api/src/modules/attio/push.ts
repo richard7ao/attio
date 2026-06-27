@@ -1,4 +1,4 @@
-import { getCompanyContext } from '@attio/db';
+import { getCompanyContext, listCompaniesWithChurn } from '@attio/db';
 import type { AccountBrief } from '@attio/shared';
 import { config } from '../../config.js';
 import { attio, type AttioAttributeDef } from './client.js';
@@ -88,31 +88,73 @@ export async function pushBriefToAttio(
     ].join('\n'),
   });
 
-  // 3 + 4) churn list entry + call task, at-risk only, deduped by list membership
-  let listEntryId: string | null = null;
+  // 3) churn list entry — upserted for EVERY status (red/amber/green) so the list
+  // mirrors the dashboard; clicking an entry shows the full record data.
+  const { entryId: listEntryId, added: addedToChurnList } = await upsertChurnListEntry(
+    companyId,
+    status,
+  );
+
+  // 4) call task — at-risk only, and only when first added to the list (dedup).
   let taskId: string | null = null;
-  let addedToChurnList = false;
-  if (atRisk) {
-    const list = config.ATTIO_CHURN_LIST;
-    const onList = (await attio.queryListEntries(list)).some(
-      (e) => e.parent_record_id === companyId,
-    );
-    if (!onList) {
-      listEntryId = (await attio.addListEntry(list, companyId)).id.entry_id;
-      addedToChurnList = true;
-      const assignee = await resolveAssignee();
-      if (assignee) {
-        const deadlineAt = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString();
-        const task = await attio.createTask({
-          content: `Call ${ctx?.name ?? companyId} re: churn (${status.toUpperCase()}). ${brief.recommendedPlay}`,
-          deadlineAt,
-          linkedRecordId: companyId,
-          assigneeId: assignee,
-        });
-        taskId = task.id.task_id;
-      }
+  if (atRisk && addedToChurnList) {
+    const assignee = await resolveAssignee();
+    if (assignee) {
+      const deadlineAt = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString();
+      const task = await attio.createTask({
+        content: `Call ${ctx?.name ?? companyId} re: churn (${status.toUpperCase()}). ${brief.recommendedPlay}`,
+        deadlineAt,
+        linkedRecordId: companyId,
+        assigneeId: assignee,
+      });
+      taskId = task.id.task_id;
     }
   }
 
   return { companyId, noteId: note.id.note_id, taskId, listEntryId, addedToChurnList };
+}
+
+// The churn list's status attribute (slug "green") maps our RAG status.
+const STATUS_TITLE: Record<string, string> = { red: 'Red', amber: 'Amber', green: 'Green' };
+
+/** Create or update a company's churn-list entry, setting its RAG status. */
+async function upsertChurnListEntry(
+  companyId: string,
+  status: string,
+): Promise<{ entryId: string; added: boolean }> {
+  const list = config.ATTIO_CHURN_LIST;
+  const entryValues = { green: STATUS_TITLE[status] ?? 'Green' };
+  const existing = (await attio.queryListEntries(list)).find(
+    (e) => e.parent_record_id === companyId,
+  );
+  if (existing) {
+    await attio.updateListEntry(list, existing.id.entry_id, entryValues);
+    return { entryId: existing.id.entry_id, added: false };
+  }
+  const created = await attio.addListEntry(list, companyId, entryValues);
+  return { entryId: created.id.entry_id, added: true };
+}
+
+/**
+ * Bulk-upsert every company onto the churn list with its current RAG status, so
+ * the list shows everything the dashboard shows. Fetches existing entries once.
+ */
+export async function syncAllCompaniesToList(): Promise<{ upserted: number }> {
+  await ensureChurnAttributes();
+  const list = config.ATTIO_CHURN_LIST;
+  const [companies, entries] = await Promise.all([
+    listCompaniesWithChurn(),
+    attio.queryListEntries(list),
+  ]);
+  const entryByCompany = new Map(entries.map((e) => [e.parent_record_id, e.id.entry_id]));
+
+  let upserted = 0;
+  for (const c of companies) {
+    const entryValues = { green: STATUS_TITLE[c.status] ?? 'Green' };
+    const entryId = entryByCompany.get(c.companyId);
+    if (entryId) await attio.updateListEntry(list, entryId, entryValues);
+    else await attio.addListEntry(list, c.companyId, entryValues);
+    upserted++;
+  }
+  return { upserted };
 }

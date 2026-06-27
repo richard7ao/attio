@@ -1,7 +1,7 @@
 import { listCompaniesWithChurn } from '@attio/db';
 import type { FastifyInstance } from 'fastify';
 import { generateAccountBrief } from '../analysis/brief.js';
-import { attioPushEnabled, pushBriefToAttio } from './push.js';
+import { attioPushEnabled, pushBriefToAttio, syncAllCompaniesToList } from './push.js';
 import { listCustomerSuccess, listCustomerSupportUsers, listWonContracts } from './queries.js';
 import { syncAttio } from './sync.js';
 
@@ -27,6 +27,13 @@ export async function attioRoutes(app: FastifyInstance): Promise<void> {
     if (!brief) return reply.notFound('Unknown company');
     const pushed = await pushBriefToAttio(companyId, brief);
     return { ok: true, pushed };
+  });
+
+  // Mirror the dashboard into the Attio churn list: upsert every company with its
+  // R/A/G status (drill into an entry to see the full record + brief).
+  app.post('/attio/sync-list', async (request, reply) => {
+    if (!attioPushEnabled()) return reply.serviceUnavailable('ATTIO_API_KEY not configured');
+    return { ok: true, ...(await syncAllCompaniesToList()) };
   });
 
   // Push every at-risk (red/amber) company into Attio.

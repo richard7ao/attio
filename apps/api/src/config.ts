@@ -28,6 +28,10 @@ const envSchema = z.object({
   ATTIO_CHURN_LIST: z.string().default('attio_churn'),
   // Workspace member to assign call tasks to; if unset, the first member is used.
   ATTIO_TASK_ASSIGNEE_ID: optionalSecret,
+  // Signing secret for inbound Attio webhooks (the connector); verified if set.
+  ATTIO_WEBHOOK_SECRET: optionalSecret,
+  // Voice service base URL — the connector forwards "place a call" here.
+  VOICE_BASE_URL: optionalSecret,
 
   // Stripe
   STRIPE_API_KEY: optionalSecret,
