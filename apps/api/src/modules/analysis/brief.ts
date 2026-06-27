@@ -1,6 +1,7 @@
 import { getCompanyContext, latestOpenEscalationId, updateEscalationBrief } from '@attio/db';
 import type { AccountBrief, AccountContext } from '@attio/shared';
 import { attioPushEnabled, pushBriefToAttio } from '../attio/push.js';
+import { dispatchRescue, rescueDispatchEnabled } from '../rescue/dispatch.js';
 import { fallbackBrief } from './fallback.js';
 import { mubitBrief, mubitEnabled, mubitRemember } from './mubit.js';
 import { superlinkBrief, superlinkEnabled } from './superlink.js';
@@ -55,5 +56,7 @@ export async function generateAndSaveBrief(
       /* best-effort */
     }
   }
+  // Hand off to the n8n rescue workflow (voice/email/queue). Best-effort.
+  if (rescueDispatchEnabled()) await dispatchRescue(companyId, brief);
   return { brief, escalationId };
 }

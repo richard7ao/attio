@@ -8,6 +8,7 @@ import { attioRoutes } from './modules/attio/index.js';
 import { churnRoutes } from './modules/churn/index.js';
 import { healthRoutes } from './modules/health/index.js';
 import { outreachRoutes } from './modules/outreach/index.js';
+import { rescueRoutes } from './modules/rescue/index.js';
 import { stripeRoutes } from './modules/stripe/index.js';
 import { triageRoutes } from './modules/triage/index.js';
 import { voiceRoutes } from './modules/voice/index.js';
@@ -34,6 +35,7 @@ export async function buildApp(): Promise<FastifyInstance> {
       await api.register(churnRoutes);
       await api.register(analysisRoutes);
       await api.register(stripeRoutes);
+      await api.register(rescueRoutes);
       await api.register(voiceRoutes);
       await api.register(webhookRoutes);
     },

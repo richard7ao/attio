@@ -52,6 +52,10 @@ const envSchema = z.object({
   MUBIT_API_KEY: optionalSecret,
   MUBIT_BASE_URL: z.string().default('https://api.mubit.ai'),
   MUBIT_AGENT: z.string().default('head-of-data'),
+
+  // Churn-rescue orchestration: when set, escalations POST a churn.escalated
+  // event (with the brief) to the n8n WF-4 webhook -> voice/email/queue routing.
+  N8N_WEBHOOK_BASE_URL: optionalSecret,
 });
 
 /** Parsed, validated environment. Fails fast on misconfiguration. */

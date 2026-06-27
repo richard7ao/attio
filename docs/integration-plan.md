@@ -83,13 +83,39 @@ plan to wire it all into one system. Written after reviewing every branch/commit
 - [ ] Smoke-test WF-3 (`GET /dashboard/summary|accounts|account/:id`) — should work
       unchanged since it already targets our schema.
 
-### Phase 2 — Emit churn events from our API
-- [ ] Add `N8N_WEBHOOK_BASE_URL` to config/env.
-- [ ] In `generateAndSaveBrief` (after the Attio push), best-effort `POST` to
-      `${N8N_WEBHOOK_BASE_URL}/webhook/churn-rescue/run` with:
-      `{ companyId, name, status, score, priority, brief, ownerEmail, phone }`.
-      Derive `priority` from status + ARR (red+high-ARR = high). Reuse the
-      Attio owner/`attio_people.phone` we already mirror.
+### Phase 2 — Emit churn events from our API ✅ DONE
+- [x] `N8N_WEBHOOK_BASE_URL` added to config/env.
+- [x] `generateAndSaveBrief` (after the Attio push) best-effort `POST`s to
+      `${N8N_WEBHOOK_BASE_URL}/webhook/churn-rescue/run`
+      (`apps/api/src/modules/rescue/dispatch.ts`).
+- [x] Priority mapping: red→high, amber→medium, green→low.
+- [x] Primary contact (name/email/phone) resolved from `attio_people`
+      (`getCompanyPrimaryContact`) and included.
+- [x] Inbound callback `POST /api/rescue/outcome` records a voice/outreach result
+      as an Attio note; `GET /api/rescue/event/:companyId` previews the payload.
+
+**Contract — `POST {N8N_WEBHOOK_BASE_URL}/webhook/churn-rescue/run`** (what WF-4 receives):
+```jsonc
+{
+  "event": "churn.escalated",
+  "companyId": "<attio company record_id>",
+  "name": "Acme",
+  "status": "red",            // red | amber | green
+  "score": 100,               // 0-100
+  "priority": "high",         // high | medium | low  -> WF-4 Route by Priority
+  "arrAtRisk": 50000,
+  "contact": { "name": "...", "email": "...", "phone": "+1..." },
+  "brief": { "summary": "...", "churnDrivers": "...",
+             "recommendedPlay": "...", "arrAtRisk": 50000, "source": "superlink" },
+  "at": "2026-06-27T14:41:12Z"
+}
+```
+
+**Contract — voice/n8n report a result back:** `POST /api/rescue/outcome`
+```jsonc
+{ "companyId": "...", "disposition": "completed|no_answer|voicemail|failed|scheduled_callback",
+  "summary": "...", "transcript": "..." }   // -> writes an Attio note on the company
+```
 
 ### Phase 3 — Rework WF-4 into pure orchestration
 - [ ] **Delete** the Gemini node + the 5 Supabase data-fetch nodes + Build Context.
