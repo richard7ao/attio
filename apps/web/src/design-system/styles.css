@@ -1,0 +1,413 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+/* ============================================================
+   Sentry.CS — Color tokens
+   Dark "mission-control" cockpit. RAG (Red/Amber/Green) is the
+   visual backbone; a single cool blue carries interactivity.
+   ============================================================ */
+
+:root {
+  /* ---------- Base canvas (cool near-black slate) ---------- */
+  --bg-app:        #0A0D14;  /* the app background */
+  --bg-sunken:     #06090F;  /* deepest wells, code, terminals */
+  --surface-1:     #10141E;  /* primary panel / card */
+  --surface-2:     #161B28;  /* raised card */
+  --surface-3:     #1E2433;  /* hover / popover / elevated */
+  --surface-inset: #0C0F17;  /* inputs, inset wells */
+
+  /* ---------- Raw slate ramp (cool, desaturated) ---------- */
+  --slate-950: #06090F;
+  --slate-900: #0A0D14;
+  --slate-850: #10141E;
+  --slate-800: #161B28;
+  --slate-750: #1E2433;
+  --slate-700: #283041;
+  --slate-600: #3A4356;
+  --slate-500: #525C71;
+  --slate-400: #6C7689;
+  --slate-300: #8C97AB;
+  --slate-200: #AEB8CB;
+  --slate-100: #D2DAE8;
+  --slate-050: #EEF2F8;
+
+  /* ---------- Hairlines / borders ---------- */
+  --border-subtle:  rgba(255, 255, 255, 0.055);
+  --border-default: rgba(255, 255, 255, 0.10);
+  --border-strong:  rgba(255, 255, 255, 0.16);
+  --border-focus:   var(--accent);
+
+  /* ---------- Text ---------- */
+  --text-primary:   #EAEEF6;
+  --text-secondary: #A2ABBF;
+  --text-tertiary:  #6C7689;
+  --text-disabled:  #49526380;
+  --text-inverse:   #0A0D14;
+  --text-link:      var(--accent-text);
+
+  /* ---------- Brand accent — mission-control blue ---------- */
+  --accent:        #4C8DFF;
+  --accent-hover:  #6BA0FF;
+  --accent-press:  #3A7AEB;
+  --accent-soft:   rgba(76, 141, 255, 0.13);
+  --accent-border: rgba(76, 141, 255, 0.42);
+  --accent-text:   #9CC0FF;
+
+  /* ============================================================
+     RAG — the backbone. Each tier ships a solid (dot/bar),
+     a text tone (legible on dark), a soft surface fill, and a
+     border tone for tinted cards / chips.
+     ============================================================ */
+
+  /* GREEN — Healthy */
+  --rag-green:        #2FD98A;
+  --rag-green-strong: #18B873;
+  --rag-green-text:   #6FE7B2;
+  --rag-green-soft:   rgba(47, 217, 138, 0.12);
+  --rag-green-border: rgba(47, 217, 138, 0.32);
+  --rag-green-glow:   rgba(47, 217, 138, 0.45);
+
+  /* AMBER — Investigate */
+  --rag-amber:        #F5B13D;
+  --rag-amber-strong: #E09A1F;
+  --rag-amber-text:   #FBD28C;
+  --rag-amber-soft:   rgba(245, 177, 61, 0.12);
+  --rag-amber-border: rgba(245, 177, 61, 0.34);
+  --rag-amber-glow:   rgba(245, 177, 61, 0.45);
+
+  /* RED — Churn risk */
+  --rag-red:        #FB5E73;
+  --rag-red-strong: #E63E56;
+  --rag-red-text:   #FF9DAB;
+  --rag-red-soft:   rgba(251, 94, 115, 0.12);
+  --rag-red-border: rgba(251, 94, 115, 0.34);
+  --rag-red-glow:   rgba(251, 94, 115, 0.45);
+
+  /* ---------- Supporting status (non-RAG UI feedback) ---------- */
+  --info:        #4C8DFF;
+  --info-soft:   rgba(76, 141, 255, 0.13);
+  --positive:    #2FD98A;   /* deltas up, success toasts */
+  --negative:    #FB5E73;   /* deltas down, error toasts */
+  --warning:     #F5B13D;
+
+  /* ---------- Data-viz ramp (charts, sparklines) ---------- */
+  --viz-1: #4C8DFF;
+  --viz-2: #2FD98A;
+  --viz-3: #F5B13D;
+  --viz-4: #B98BFF;
+  --viz-5: #36C5C0;
+  --viz-grid: rgba(255, 255, 255, 0.06);
+  --viz-track: rgba(255, 255, 255, 0.07);
+
+  /* ---------- Semantic aliases (use these in components) ---------- */
+  --surface-card:      var(--surface-1);
+  --surface-raised:    var(--surface-2);
+  --surface-popover:   var(--surface-3);
+  --surface-field:     var(--surface-inset);
+  --on-accent:         #06121F;   /* text/icon sitting on accent fill */
+  --scrim:             rgba(6, 9, 15, 0.66);  /* modal backdrop */
+}
+
+/* ============================================================
+   Sentry.CS — Typography tokens
+   IBM Plex Sans (UI/body) · IBM Plex Mono (data, IDs, counters,
+   labels) · Space Grotesk (marketing display only).
+   Mono is a first-class citizen here: every number that a CSM
+   scans — ARR, renewal countdown, latency, account id — is mono.
+   ============================================================ */
+
+:root {
+  /* ---------- Families ---------- */
+  --font-sans:    'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:    'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-display: 'Space Grotesk', 'IBM Plex Sans', sans-serif;
+
+  /* ---------- Type scale (px) ---------- */
+  --text-2xs:  11px;
+  --text-xs:   12px;
+  --text-sm:   13px;
+  --text-base: 14px;   /* default UI body */
+  --text-md:   16px;
+  --text-lg:   18px;
+  --text-xl:   22px;
+  --text-2xl:  28px;
+  --text-3xl:  36px;
+  --text-4xl:  48px;
+  --text-5xl:  64px;
+  --text-6xl:  84px;
+
+  /* ---------- Weights ---------- */
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  /* ---------- Line heights ---------- */
+  --leading-tight:   1.1;
+  --leading-snug:    1.28;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.65;
+
+  /* ---------- Letter spacing ---------- */
+  --tracking-tight:  -0.02em;
+  --tracking-snug:   -0.011em;
+  --tracking-normal: 0;
+  --tracking-wide:   0.04em;
+  --tracking-label:  0.09em;   /* ALL-CAPS mono eyebrow/labels */
+
+  /* ---------- Semantic roles ---------- */
+  --type-display:   var(--weight-bold) var(--text-5xl)/var(--leading-tight) var(--font-display);
+  --type-h1:        var(--weight-semibold) var(--text-3xl)/var(--leading-tight) var(--font-sans);
+  --type-h2:        var(--weight-semibold) var(--text-2xl)/var(--leading-snug) var(--font-sans);
+  --type-h3:        var(--weight-semibold) var(--text-xl)/var(--leading-snug) var(--font-sans);
+  --type-title:     var(--weight-semibold) var(--text-md)/var(--leading-snug) var(--font-sans);
+  --type-body:      var(--weight-regular) var(--text-base)/var(--leading-normal) var(--font-sans);
+  --type-body-sm:   var(--weight-regular) var(--text-sm)/var(--leading-normal) var(--font-sans);
+  --type-mono-data: var(--weight-medium) var(--text-base)/1.2 var(--font-mono);
+  --type-mono-sm:   var(--weight-medium) var(--text-xs)/1.2 var(--font-mono);
+}
+
+/* ============================================================
+   Sentry.CS — Spacing & sizing tokens
+   4px base grid. Dense, table-friendly rhythm for triaging
+   dozens of accounts at once.
+   ============================================================ */
+
+:root {
+  --space-0:   0;
+  --space-px:  1px;
+  --space-0-5: 2px;
+  --space-1:   4px;
+  --space-1-5: 6px;
+  --space-2:   8px;
+  --space-2-5: 10px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-7:   28px;
+  --space-8:   32px;
+  --space-10:  40px;
+  --space-12:  48px;
+  --space-16:  64px;
+  --space-20:  80px;
+  --space-24:  96px;
+  --space-32:  128px;
+
+  /* ---------- Layout rails ---------- */
+  --sidebar-width:     232px;
+  --sidebar-collapsed: 64px;
+  --topbar-height:     56px;
+  --content-max:       1320px;
+  --reading-max:       680px;
+
+  /* ---------- Control heights ---------- */
+  --control-sm: 28px;
+  --control-md: 34px;
+  --control-lg: 40px;
+
+  /* ---------- Icon sizes ---------- */
+  --icon-xs: 13px;
+  --icon-sm: 15px;
+  --icon-md: 17px;
+  --icon-lg: 20px;
+  --icon-xl: 24px;
+}
+
+/* ============================================================
+   Sentry.CS — Radius, elevation, motion
+   Restrained radii (6–12px). Shadows are quiet on dark — depth
+   comes from surface lightening + a hairline, not heavy blur.
+   Colored "glow" rings carry RAG state on focused cards.
+   ============================================================ */
+
+:root {
+  /* ---------- Radius ---------- */
+  --radius-xs:   4px;
+  --radius-sm:   6px;
+  --radius-md:   8px;
+  --radius-lg:   10px;
+  --radius-xl:   12px;
+  --radius-2xl:  16px;
+  --radius-pill: 999px;
+
+  /* ---------- Elevation (dark-tuned) ---------- */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.40);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.55);
+  --shadow-xl: 0 28px 64px rgba(0, 0, 0, 0.62);
+
+  /* Inset top-highlight that gives panels their "lit" edge */
+  --edge-light: inset 0 1px 0 rgba(255, 255, 255, 0.05); /* @kind shadow */
+
+  /* Focus ring */
+  --ring-accent: 0 0 0 3px rgba(76, 141, 255, 0.32);
+  --ring-red:    0 0 0 3px rgba(251, 94, 115, 0.30);
+
+  /* ---------- Motion ---------- */
+  --ease-out:   cubic-bezier(0.22, 1, 0.36, 1); /* @kind other */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1); /* @kind other */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* @kind other */
+
+  --dur-fast:   120ms; /* @kind other */
+  --dur-base:   180ms; /* @kind other */
+  --dur-slow:   260ms; /* @kind other */
+  --dur-slower: 420ms; /* @kind other */
+}
+
+/* ============================================================
+   Sentry.CS — Base reset & element defaults
+   Applied app-wide. Sets the dark canvas, default type, and
+   selection/scrollbar styling so consumers inherit the cockpit.
+   ============================================================ */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg-app);
+  color: var(--text-primary);
+  font: var(--type-body);
+  letter-spacing: var(--tracking-snug);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'tnum' 1, 'cv05' 1;  /* tabular figures by default */
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--text-primary);
+}
+
+/* Tabular numerics everywhere money & countdowns live */
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* Quiet dark scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--slate-600) transparent;
+}
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb {
+  background: var(--slate-600);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover { background: var(--slate-500); }
+
+a { color: var(--text-link); text-decoration: none; }
+
+/* ============================================================
+   Sentry.CS — Light-theme token overrides
+   Applied when html[data-theme="light"] is set.
+   ============================================================ */
+
+:root { --hero-grid: rgba(255, 255, 255, 0.022); }
+
+html[data-theme='light'] {
+  --hero-grid: rgba(15, 23, 42, 0.035) !important;
+  --bg-app: #eef1f7 !important;
+  --bg-sunken: #e4e8f0 !important;
+  --surface-1: #ffffff !important;
+  --surface-2: #f4f6fb !important;
+  --surface-3: #ffffff !important;
+  --surface-inset: #f2f5fa !important;
+  --surface-card: #ffffff !important;
+  --surface-raised: #f4f6fb !important;
+  --surface-popover: #ffffff !important;
+  --surface-field: #f2f5fa !important;
+  --scrim: rgba(255, 255, 255, 0.8) !important;
+  --border-subtle: rgba(15, 23, 42, 0.07) !important;
+  --border-default: rgba(15, 23, 42, 0.12) !important;
+  --border-strong: rgba(15, 23, 42, 0.22) !important;
+  --text-primary: #101828 !important;
+  --text-secondary: #475069 !important;
+  --text-tertiary: #79839a !important;
+  --text-disabled: rgba(16, 24, 40, 0.38) !important;
+  --text-inverse: #ffffff !important;
+  --on-accent: #ffffff !important;
+  --accent: #2f6be0 !important;
+  --accent-hover: #1f5ad0 !important;
+  --accent-press: #1a4fb8 !important;
+  --accent-soft: rgba(47, 107, 224, 0.1) !important;
+  --accent-border: rgba(47, 107, 224, 0.3) !important;
+  --accent-text: #2257c2 !important;
+  --rag-green: #12a55f !important;
+  --rag-green-strong: #0c8b4f !important;
+  --rag-green-text: #0a7c45 !important;
+  --rag-green-soft: rgba(18, 165, 95, 0.12) !important;
+  --rag-green-border: rgba(18, 165, 95, 0.3) !important;
+  --rag-green-glow: rgba(18, 165, 95, 0.32) !important;
+  --rag-amber: #d98a0b !important;
+  --rag-amber-strong: #bc7700 !important;
+  --rag-amber-text: #9a6200 !important;
+  --rag-amber-soft: rgba(217, 138, 11, 0.13) !important;
+  --rag-amber-border: rgba(217, 138, 11, 0.32) !important;
+  --rag-amber-glow: rgba(217, 138, 11, 0.32) !important;
+  --rag-red: #e03e57 !important;
+  --rag-red-strong: #c72840 !important;
+  --rag-red-text: #c21f3c !important;
+  --rag-red-soft: rgba(224, 62, 87, 0.1) !important;
+  --rag-red-border: rgba(224, 62, 87, 0.3) !important;
+  --rag-red-glow: rgba(224, 62, 87, 0.32) !important;
+  --info: #2f6be0 !important;
+  --info-soft: rgba(47, 107, 224, 0.1) !important;
+  --positive: #12a55f !important;
+  --negative: #e03e57 !important;
+  --warning: #d98a0b !important;
+  --viz-grid: rgba(15, 23, 42, 0.06) !important;
+  --viz-track: rgba(15, 23, 42, 0.08) !important;
+  --slate-600: #c6cdda !important;
+  --slate-700: #d6dce6 !important;
+  --slate-500: #9aa3b5 !important;
+  --edge-light: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.04) !important;
+  --shadow-sm: 0 2px 6px rgba(16, 24, 40, 0.08) !important;
+  --shadow-md: 0 6px 18px rgba(16, 24, 40, 0.1) !important;
+  --shadow-lg: 0 16px 40px rgba(16, 24, 40, 0.16) !important;
+  --shadow-xl: 0 28px 64px rgba(16, 24, 40, 0.2) !important;
+}
+
+html[data-theme='light'] *::-webkit-scrollbar-thumb {
+  background: #c7cedb;
+  background-clip: content-box;
+}
+html[data-theme='light'] *::-webkit-scrollbar-thumb:hover {
+  background: #aab4c5;
+  background-clip: content-box;
+}
+
+/* ============================================================
+   Sentry.CS — Keyframes
+   ============================================================ */
+
+@keyframes pulseRing {
+  0% { box-shadow: 0 0 0 0 var(--rag-green-glow); }
+  70% { box-shadow: 0 0 0 7px rgba(0, 0, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+}
+
+@keyframes sweep {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes sentryPulse {
+  0% { transform: scale(1); opacity: 0.7; }
+  70% { transform: scale(2.4); opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
