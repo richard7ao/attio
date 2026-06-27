@@ -6,7 +6,7 @@ customer over the phone**, hold an account-aware conversation, decide the next s
 and write the transcript + outcome back to the CRM — no human in the loop.
 
 It orchestrates **SLNG** (managed voice-agent platform: telephony + STT + LLM + TTS) and
-uses a pluggable **brain** (Gemini by default; Claude / OpenAI / Mubit) for the reasoning
+uses a pluggable **brain** (Superlink+Mubit by default; Claude / OpenAI) for the reasoning
 *outside* the live call: pre-call planning, the mid-call lookup tool, and the post-call
 summary/disposition.
 
@@ -62,7 +62,7 @@ curl -sX POST localhost:8787/calls -H 'content-type: application/json' -d '{
 ```
 The phone rings, the agent runs the conversation account-aware (asking "what plan am I
 on?" triggers `lookup_account`, which returns real facts), and on hangup the transcript +
-Gemini summary + disposition + next action are saved. The response/script prints a
+The summary + disposition + next action are saved. The response/script prints a
 `…/demo/call.html?id=…` URL to watch it.
 
 ### 2. Browser web session — validate the agent without dialing
@@ -81,7 +81,7 @@ pnpm demo          # or: pnpm demo -- acme
 ## Setup
 
 ```bash
-cp .env.example .env        # fill in Supabase + SLNG + GEMINI_API_KEY (see comments)
+cp .env.example .env        # fill in Supabase + SLNG + SUPERLINK_*/MUBIT_* (see comments)
 pnpm install                # from the repo root (pnpm workspace)
 # apply DB once in Supabase: packages/db/supabase/schema.sql then voice.sql
 pnpm dev                    # starts on :8787  (pnpm --filter @attio/voice dev from root)
@@ -112,9 +112,12 @@ and re-run `pnpm upsert-agent`, or webhooks (transcript capture) silently break.
 ## Agent brain
 
 `AGENT_BRAIN` selects the reasoning model for planning / tools / summaries (not the live
-voice — that's SLNG's own LLM): `gemini` (default) · `claude` · `openai` · `mubit`. An
-unset/failed key falls back to Claude; if that's unset too, summaries are skipped and the
-transcript still saves. See `.env.example` for keys.
+voice — that's SLNG's own LLM): `superlink` (default) · `claude` · `openai`. The default
+`superlink` brain is the Superlink LLM grounded by Mubit memory — each step runs
+`recall → generate → remember` (see `docs/guides/superlink-mubit-agents.md`); Mubit
+recall/remember are best-effort and disabled if `MUBIT_*` is unset. An unset/failed key
+falls back to Claude; if that's unset too, summaries are skipped and the transcript still
+saves. See `.env.example` for keys.
 
 ## Notes from building this
 
@@ -130,5 +133,5 @@ transcript still saves. See `.env.example` for keys.
 - Decide: keep standalone vs. fold logic into `apps/api/src/modules/voice` (Fastify).
 - Convert `packages/db/supabase/voice.sql` into a Drizzle migration.
 - Trigger calls from the churn/escalation flow (`churn.escalated` → a signal → `POST /calls`).
-- Wire `SLNG_*` / `GEMINI_API_KEY` / `PUBLIC_BASE_URL` into the team's secrets + a stable
+- Wire `SLNG_*` / `SUPERLINK_*` / `MUBIT_*` / `PUBLIC_BASE_URL` into the team's secrets + a stable
   webhook URL for deploy.

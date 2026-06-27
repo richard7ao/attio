@@ -5,7 +5,7 @@ import { PLAN_INSTRUCTIONS, SUMMARY_INSTRUCTIONS, renderAccountContext, transcri
 import { type AgentBrain, normalizeDisposition } from "./brain.js";
 
 export interface OpenAICompatOptions {
-  name: string; // e.g. "gemini", "openai"
+  name: string; // e.g. "openai", "groq"
   baseUrl: string; // full base incl. any prefix; we POST `${baseUrl}/chat/completions`
   apiKey: string;
   model: string;

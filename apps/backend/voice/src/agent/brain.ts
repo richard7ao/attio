@@ -9,7 +9,7 @@ import type { AccountSignal, CallPlan, CallSummary, TranscriptSegment } from "..
  *   - runTool:   mid-call — answer a tool webhook the SLNG agent invokes
  *   - summarize: post-call — transcript -> summary + disposition + next action
  *
- * Mubit (the required runtime) and Claude (fallback) both implement this.
+ * Superlink+Mubit (the default runtime) and Claude (fallback) both implement this.
  */
 export interface AgentBrain {
   readonly name: string;
@@ -21,28 +21,19 @@ export interface AgentBrain {
 let cached: AgentBrain | null = null;
 
 /**
- * Pick the configured brain. Falls back to Claude if Mubit is selected but not
- * yet configured, so the demo never hard-stops on missing Mubit creds.
+ * Pick the configured brain. Falls back to Claude if Superlink is selected but
+ * not yet configured, so the demo never hard-stops on missing creds.
  */
 export async function getBrain(): Promise<AgentBrain> {
   if (cached) return cached;
 
-  if (config.brain.kind === "mubit") {
-    if (config.brain.mubit.apiKey && config.brain.mubit.apiBase) {
-      const { MubitBrain } = await import("./mubit.js");
-      cached = new MubitBrain();
+  if (config.brain.kind === "superlink") {
+    if (config.brain.superlink.apiKey && config.brain.superlink.baseUrl) {
+      const { SuperlinkBrain } = await import("./superlink.js");
+      cached = new SuperlinkBrain();
       return cached;
     }
-    log.warn("AGENT_BRAIN=mubit but MUBIT_API_KEY/BASE not set — falling back to Claude");
-  }
-
-  if (config.brain.kind === "gemini") {
-    if (config.brain.gemini.apiKey) {
-      const { OpenAICompatBrain } = await import("./openai.js");
-      cached = new OpenAICompatBrain({ name: "gemini", ...config.brain.gemini });
-      return cached;
-    }
-    log.warn("AGENT_BRAIN=gemini but GEMINI_API_KEY not set — falling back to Claude");
+    log.warn("AGENT_BRAIN=superlink but SUPERLINK_API_KEY/BASE_URL not set — falling back to Claude");
   }
 
   if (config.brain.kind === "openai") {

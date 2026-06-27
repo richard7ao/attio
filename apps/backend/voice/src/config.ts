@@ -28,11 +28,21 @@ export const config = {
   },
 
   brain: {
-    kind: (env.AGENT_BRAIN ?? "claude") as "mubit" | "claude" | "openai" | "gemini",
+    kind: (env.AGENT_BRAIN ?? "claude") as "superlink" | "mubit" | "claude" | "openai",
+    // Superlink (the LLM) grounded by Mubit (durable memory) — the default brain.
+    // See docs/guides/superlink-mubit-agents.md. BASE URL must end in /v1.
+    superlink: {
+      baseUrl: (env.SUPERLINK_BASE_URL ?? "").replace(/\/$/, ""),
+      apiKey: env.SUPERLINK_API_KEY ?? "",
+      model: env.SUPERLINK_MODEL ?? "Qwen/Qwen3-4B-Instruct-2507",
+      // Warm GPU hot lane: a machine profile (`rtx6000-qwen27`) or `pool/profile`.
+      gpu: env.SUPERLINK_GPU ?? "",
+    },
+    // Mubit memory layer: recall/remember for the Superlink brain (best-effort).
     mubit: {
-      apiBase: (env.MUBIT_API_BASE ?? "").replace(/\/$/, ""),
+      baseUrl: (env.MUBIT_BASE_URL ?? "https://api.mubit.ai").replace(/\/$/, ""),
       apiKey: env.MUBIT_API_KEY ?? "",
-      model: env.MUBIT_MODEL ?? "",
+      agent: env.MUBIT_AGENT ?? "voice-account-manager",
     },
     claude: {
       apiKey: env.ANTHROPIC_API_KEY ?? "",
@@ -43,12 +53,6 @@ export const config = {
       baseUrl: (env.OPENAI_BASE_URL ?? "https://api.openai.com/v1").replace(/\/$/, ""),
       apiKey: env.OPENAI_API_KEY ?? "",
       model: env.OPENAI_MODEL ?? "gpt-4o-mini",
-    },
-    // Google Gemini via its OpenAI-compatible endpoint — only needs GEMINI_API_KEY.
-    gemini: {
-      baseUrl: (env.GEMINI_BASE_URL ?? "https://generativelanguage.googleapis.com/v1beta/openai").replace(/\/$/, ""),
-      apiKey: env.GEMINI_API_KEY ?? "",
-      model: env.GEMINI_MODEL ?? "gemini-2.5-flash",
     },
   },
 } as const;
