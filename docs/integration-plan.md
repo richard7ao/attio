@@ -75,13 +75,20 @@ plan to wire it all into one system. Written after reviewing every branch/commit
 - [ ] Add `apps/backend/voice` to the pnpm workspace + Turbo pipeline; align its
       tsconfig/eslint with `packages/config`.
 
-### Phase 1 — One database
-- [ ] Provision Supabase; set `DATABASE_URL` (api), `SUPABASE_URL` + service-role key
-      (voice, n8n), `DATABASE_DRIVER=postgres`.
-- [ ] Run `pnpm db:migrate` (postgres) + apply `packages/db/supabase/voice.sql`.
-- [ ] Seed: `DATABASE_URL=… node packages/db/scripts/seed-supabase-from-sqlite.mjs`.
-- [ ] Smoke-test WF-3 (`GET /dashboard/summary|accounts|account/:id`) — should work
-      unchanged since it already targets our schema.
+### Phase 1 — One database ✅ MOSTLY DONE
+- [x] Supabase Postgres live (eu-west-1 pooler, session mode :5432, SSL required).
+      `.env`: `DATABASE_DRIVER=postgres` + `DATABASE_URL=…?sslmode=require`.
+- [x] Schema migrated (incl. the Stripe columns migration that was missing) and
+      already seeded by a teammate: 117 companies, 385 people, 60 CS, 9 contracts,
+      4 churn/escalations. `attio_companies` now has `stripe_customer_id` /
+      `stripe_subscription_id`.
+- [x] API verified against Supabase: `/companies/churn` (117), `/triage/risk`,
+      brief pipeline (postgres read path) all working.
+- [x] WF-3 dashboard queries smoke-tested directly against Supabase — work as-is.
+- [ ] ⚠️ **`packages/db/supabase/voice.sql` cannot be applied as-is**: it FKs to
+      `public.profiles(id)` (Supabase-auth convention) which our schema doesn't
+      have (we use `users`). **Reconciliation needed** by the voice owner — point
+      it at our `users` table, or add a `profiles` table/view + `uuid-ossp`.
 
 ### Phase 2 — Emit churn events from our API ✅ DONE
 - [x] `N8N_WEBHOOK_BASE_URL` added to config/env.
