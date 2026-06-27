@@ -47,10 +47,8 @@ export async function rescueRoutes(app: FastifyInstance): Promise<void> {
     return { ok: true, companyId, noteId: note.id.note_id };
   });
 
-  // "Place Call" in the dashboard. Two paths:
-  //   1. If N8N_WEBHOOK_BASE_URL is set → trigger the WF-4 churn-rescue workflow.
-  //   2. Otherwise, if VOICE_BASE_URL is set → dispatch directly to the voice
-  //      service (SLNG), which is the common path without n8n.
+  // "Place Call" in the dashboard. Tries n8n WF-4 first (if configured), then
+  // falls back to dispatching directly to the voice service (SLNG).
   app.post('/rescue/call', async (request, reply) => {
     const parsed = z
       .object({ companyId: z.string().min(1).optional(), accountId: z.string().min(1).optional() })
@@ -59,16 +57,22 @@ export async function rescueRoutes(app: FastifyInstance): Promise<void> {
     const accountId = parsed.data.accountId ?? parsed.data.companyId;
     if (!accountId) return reply.badRequest('companyId (account_id) is required');
 
-    // Path 1: n8n WF-4 workflow.
+    // Path 1: n8n WF-4 workflow (best-effort — falls through on failure).
     if (config.N8N_WEBHOOK_BASE_URL) {
-      const res = await fetch(`${config.N8N_WEBHOOK_BASE_URL}/webhook/churn-rescue/run`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ account_id: accountId }),
-      });
-      if (!res.ok) return reply.badGateway(`WF-4 trigger failed (${res.status})`);
-      const result = (await res.json().catch(() => ({}))) as unknown;
-      return { ok: true, triggered: 'WF-4', accountId, result };
+      try {
+        const res = await fetch(`${config.N8N_WEBHOOK_BASE_URL}/webhook/churn-rescue/run`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ account_id: accountId }),
+        });
+        if (res.ok) {
+          const result = (await res.json().catch(() => ({}))) as unknown;
+          return { ok: true, triggered: 'WF-4', accountId, result };
+        }
+        // n8n failed — fall through to direct voice dispatch below.
+      } catch {
+        // n8n unreachable — fall through.
+      }
     }
 
     // Path 2: direct dispatch to the voice service.
