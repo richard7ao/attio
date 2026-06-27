@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar.js';
 import { TopBar } from './TopBar.js';
 import { Toast } from './Toast.js';
+import { CallScheduler } from './CallScheduler.js';
 
 /** The cockpit app shell: left rail nav + sticky top bar + routed page outlet. */
 export function AppShell() {
@@ -15,6 +16,7 @@ export function AppShell() {
         </main>
       </div>
       <Toast />
+      <CallScheduler />
     </div>
   );
 }

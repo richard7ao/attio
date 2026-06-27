@@ -4,6 +4,7 @@ import { AppShell } from './cockpit/shell/AppShell.js';
 import { Landing } from './cockpit/pages/Landing.js';
 import { DashboardPage } from './cockpit/pages/DashboardPage.js';
 import { FeedPage } from './cockpit/pages/FeedPage.js';
+import { CallLogPage } from './cockpit/pages/CallLogPage.js';
 import { AccountsPage } from './cockpit/pages/AccountsPage.js';
 import { SignalsPage } from './cockpit/pages/SignalsPage.js';
 import { SettingsPage } from './cockpit/pages/SettingsPage.js';
@@ -22,6 +23,7 @@ export function App() {
         <Route element={<AppShell />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/feed" element={<FeedPage />} />
+          <Route path="/calls" element={<CallLogPage />} />
           <Route path="/accounts" element={<AccountsPage />} />
           <Route path="/signals" element={<SignalsPage />} />
           <Route path="/settings" element={<SettingsPage />} />

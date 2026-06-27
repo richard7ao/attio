@@ -100,6 +100,29 @@ export interface FeedSeed {
 /** How a feed item was resolved (drives the "Resolved" tab). */
 export type FeedResolution = 'call' | 'email' | 'sms' | 'dismissed';
 
+/** Lifecycle of a voice call in the Call Log. */
+export type CallStatus = 'scheduled' | 'live' | 'completed' | 'missed';
+
+/** A single voice-call record — past, ongoing, or scheduled. */
+export interface CallRecord {
+  id: string;
+  accountId: string;
+  accountName: string;
+  contact: string;
+  phone: string;
+  owner: string;
+  intent: FeedIntent;
+  status: CallStatus;
+  /** Why the call was placed (signal line / outreach reason). */
+  reason: string;
+  /** Epoch ms — scheduled time (scheduled), start time (live), or end time (completed/missed). */
+  at: number;
+  /** Talk time in seconds, for completed calls. */
+  durationSec?: number;
+  /** Result summary, for completed/missed calls. */
+  outcome?: string;
+}
+
 export interface CockpitUser {
   name: string;
   role: string;

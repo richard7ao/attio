@@ -13,6 +13,7 @@ interface NavItem {
 const WORKSPACE: NavItem[] = [
   { to: '/dashboard', label: 'Dashboard', icon: 'layout-dashboard', matches: (p) => p === '/dashboard' },
   { to: '/feed', label: 'Action Feed', icon: 'inbox', matches: (p) => p === '/feed' },
+  { to: '/calls', label: 'Call Log', icon: 'phone-call', matches: (p) => p === '/calls' },
   { to: '/accounts', label: 'Accounts', icon: 'users', matches: (p) => p === '/accounts' || p.startsWith('/account/') },
 ];
 const SYSTEM: NavItem[] = [
@@ -20,10 +21,13 @@ const SYSTEM: NavItem[] = [
   { to: '/settings', label: 'Settings', icon: 'settings', matches: (p) => p === '/settings' },
 ];
 
+const EXPANDED_WIDTH = 232;
+const COLLAPSED_WIDTH = 64;
+
 export function Sidebar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { sidebarCollapsed, triageCount, currentUser, settings } = useCockpit();
+  const { sidebarCollapsed, triageCount, upcomingCallCount, currentUser, settings } = useCockpit();
   const collapsed = sidebarCollapsed;
   const pulseAnim = settings.pulse ? 'pulseRing 2.4s infinite' : 'none';
 
@@ -33,17 +37,19 @@ export function Sidebar() {
       <a
         key={item.to}
         href={`#${item.to}`}
-        data-railnav
+        title={collapsed ? item.label : undefined}
         onClick={(e) => {
           e.preventDefault();
           navigate(item.to);
         }}
         style={{
+          position: 'relative',
           display: 'flex',
           alignItems: 'center',
-          gap: 11,
+          gap: collapsed ? 0 : 11,
+          justifyContent: collapsed ? 'center' : 'flex-start',
           height: 38,
-          padding: '0 12px',
+          padding: collapsed ? 0 : '0 12px',
           borderRadius: 8,
           textDecoration: 'none',
           font: 'var(--weight-medium) var(--text-sm)/1 var(--font-sans)',
@@ -52,11 +58,37 @@ export function Sidebar() {
           boxShadow: active ? 'inset 2px 0 0 var(--accent)' : 'none',
         }}
       >
-        <Icon name={item.icon} size={17} />
-        <span data-railtext>{item.label}</span>
-        {badge != null ? (
+        <span style={{ position: 'relative', display: 'inline-flex' }}>
+          <Icon name={item.icon} size={17} />
+          {/* When collapsed, surface the queue count / live pulse as a corner marker on the icon. */}
+          {collapsed && badge != null && badge > 0 ? (
+            <span
+              style={{
+                position: 'absolute',
+                top: -5,
+                right: -7,
+                minWidth: 15,
+                height: 15,
+                padding: '0 4px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 999,
+                background: 'var(--accent)',
+                color: 'var(--on-accent)',
+                font: 'var(--weight-semibold) 9px/1 var(--font-mono)',
+              }}
+            >
+              {badge}
+            </span>
+          ) : null}
+          {collapsed && pulse ? (
+            <span style={{ position: 'absolute', top: -3, right: -4, width: 7, height: 7, borderRadius: '50%', background: 'var(--rag-green)', animation: pulseAnim }} />
+          ) : null}
+        </span>
+        {!collapsed ? <span>{item.label}</span> : null}
+        {!collapsed && badge != null ? (
           <span
-            data-railtext
             style={{
               marginLeft: 'auto',
               minWidth: 20,
@@ -74,11 +106,8 @@ export function Sidebar() {
             {badge}
           </span>
         ) : null}
-        {pulse ? (
-          <span
-            data-railtext
-            style={{ marginLeft: 'auto', width: 7, height: 7, borderRadius: '50%', background: 'var(--rag-green)', animation: pulseAnim }}
-          />
+        {!collapsed && pulse ? (
+          <span style={{ marginLeft: 'auto', width: 7, height: 7, borderRadius: '50%', background: 'var(--rag-green)', animation: pulseAnim }} />
         ) : null}
       </a>
     );
@@ -89,7 +118,7 @@ export function Sidebar() {
       data-sidebar
       data-collapsed={collapsed ? '1' : '0'}
       style={{
-        width: 232,
+        width: collapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH,
         flexShrink: 0,
         borderRight: '1px solid var(--border-subtle)',
         background: 'var(--surface-1)',
@@ -98,18 +127,26 @@ export function Sidebar() {
         height: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        padding: '16px 14px',
-        transition: 'width .16s var(--ease-out)',
+        padding: collapsed ? '16px 10px' : '16px 14px',
+        transition: 'width .16s var(--ease-out), padding .16s var(--ease-out)',
+        overflow: 'hidden',
       }}
     >
       <a
         href="#/"
-        data-railnav
+        title={collapsed ? 'Rick' : undefined}
         onClick={(e) => {
           e.preventDefault();
           navigate('/');
         }}
-        style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', padding: '6px 8px 14px' }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          justifyContent: collapsed ? 'center' : 'flex-start',
+          textDecoration: 'none',
+          padding: collapsed ? '6px 0 14px' : '6px 8px 14px',
+        }}
       >
         <span
           style={{
@@ -127,27 +164,30 @@ export function Sidebar() {
         >
           <Icon name="radar" size={15} />
         </span>
-        <span data-railtext style={{ font: 'var(--weight-semibold) 16px/1 var(--font-display)', letterSpacing: '-0.01em', color: 'var(--text-primary)' }}>
-          Rick
-        </span>
+        {!collapsed ? (
+          <span style={{ font: 'var(--weight-semibold) 16px/1 var(--font-display)', letterSpacing: '-0.01em', color: 'var(--text-primary)' }}>
+            Rick
+          </span>
+        ) : null}
       </a>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginTop: 6 }}>
-        <div data-railtext style={labelStyle}>WORKSPACE</div>
+        {!collapsed ? <div style={labelStyle}>WORKSPACE</div> : null}
         {renderNav(WORKSPACE[0]!)}
         {renderNav(WORKSPACE[1]!, triageCount)}
-        {renderNav(WORKSPACE[2]!)}
+        {renderNav(WORKSPACE[2]!, upcomingCallCount > 0 ? upcomingCallCount : undefined)}
+        {renderNav(WORKSPACE[3]!)}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginTop: 18 }}>
-        <div data-railtext style={labelStyle}>SYSTEM</div>
+        {!collapsed ? <div style={labelStyle}>SYSTEM</div> : null}
         {renderNav(SYSTEM[0]!, undefined, true)}
         {renderNav(SYSTEM[1]!)}
       </div>
 
       <a
         href="#/settings"
-        data-railnav
+        title={collapsed ? currentUser.name : undefined}
         onClick={(e) => {
           e.preventDefault();
           navigate('/settings');
@@ -157,21 +197,24 @@ export function Sidebar() {
           display: 'flex',
           alignItems: 'center',
           gap: 10,
-          padding: 10,
+          justifyContent: collapsed ? 'center' : 'flex-start',
+          padding: collapsed ? 8 : 10,
           borderRadius: 10,
           border: '1px solid var(--border-subtle)',
           textDecoration: 'none',
         }}
       >
-        <Avatar name={currentUser.name} size={30} />
-        <div data-railtext style={{ minWidth: 0 }}>
-          <div style={{ font: 'var(--weight-semibold) var(--text-sm)/1.2 var(--font-sans)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--text-primary)' }}>
-            {currentUser.name}
+        <Avatar name={currentUser.name} size={collapsed ? 28 : 30} />
+        {!collapsed ? (
+          <div style={{ minWidth: 0 }}>
+            <div style={{ font: 'var(--weight-semibold) var(--text-sm)/1.2 var(--font-sans)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--text-primary)' }}>
+              {currentUser.name}
+            </div>
+            <div style={{ font: 'var(--weight-medium) var(--text-2xs)/1.2 var(--font-mono)', color: 'var(--text-tertiary)' }}>
+              {currentUser.role.toUpperCase()}
+            </div>
           </div>
-          <div style={{ font: 'var(--weight-medium) var(--text-2xs)/1.2 var(--font-mono)', color: 'var(--text-tertiary)' }}>
-            {currentUser.role.toUpperCase()}
-          </div>
-        </div>
+        ) : null}
       </a>
     </aside>
   );

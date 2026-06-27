@@ -1,4 +1,4 @@
-import { type AccountInput, type CockpitUser, type FeedSeed, type Integration } from '../domain/types.js';
+import { type AccountInput, type CallRecord, type CockpitUser, type FeedSeed, type Integration } from '../domain/types.js';
 
 /**
  * Seed dataset for the cockpit. This is the demo/fallback data: it renders the
@@ -317,3 +317,122 @@ export const INTEGRATIONS: Integration[] = [
 
 /** Anchor date for renewal math, matching the seed snapshot. */
 export const SEED_NOW = new Date('2026-06-27T00:00:00');
+
+/**
+ * Seed call log, generated relative to `now` so the demo always shows a
+ * believable mix of completed, ongoing, and scheduled calls.
+ */
+export function makeSeedCalls(now: number): CallRecord[] {
+  const MIN = 60000;
+  const HR = 3600000;
+  const DAY = 86400000;
+  const tomorrow10 = new Date(now);
+  tomorrow10.setDate(tomorrow10.getDate() + 1);
+  tomorrow10.setHours(10, 0, 0, 0);
+
+  return [
+    {
+      id: 'c-live-globalpeak',
+      accountId: 'globalpeak',
+      accountName: 'Global Peak Inc',
+      contact: 'Nina Kovac',
+      phone: '+1 (303) 555-0139',
+      owner: 'Marcus Vela',
+      intent: 'opportunity',
+      status: 'live',
+      reason: 'Seat-expansion offer · 94% capacity',
+      at: now - 2 * MIN,
+    },
+    {
+      id: 'c-sch-atlaspay',
+      accountId: 'atlaspay',
+      accountName: 'Atlas Pay',
+      contact: 'Sofia Marenco',
+      phone: '+1 (646) 555-0190',
+      owner: 'Priya Sundar',
+      intent: 'neutral',
+      status: 'scheduled',
+      reason: 'Map the buying committee before renewal',
+      at: now + 35 * MIN,
+    },
+    {
+      id: 'c-sch-lumen',
+      accountId: 'lumen',
+      accountName: 'Lumen Health',
+      contact: 'Aaron Vance',
+      phone: '+1 (415) 555-0177',
+      owner: 'Rae Whitlock',
+      intent: 'opportunity',
+      status: 'scheduled',
+      reason: 'Lock expansion ahead of early renewal',
+      at: now + 3 * HR,
+    },
+    {
+      id: 'c-sch-sandhill',
+      accountId: 'sandhill',
+      accountName: 'Sandhill Capital',
+      contact: 'Grace Okonkwo',
+      phone: '+1 (628) 555-0102',
+      owner: 'Anika Roth',
+      intent: 'opportunity',
+      status: 'scheduled',
+      reason: 'Upgrade nudge · 95% seats',
+      at: tomorrow10.getTime(),
+    },
+    {
+      id: 'c-done-cloudscale',
+      accountId: 'cloudscale',
+      accountName: 'CloudScale Systems',
+      contact: 'Dana Reyes',
+      phone: '+1 (206) 555-0143',
+      owner: 'Marcus Vela',
+      intent: 'risk',
+      status: 'completed',
+      reason: 'API usage down 41% · technical health check',
+      at: now - 5 * HR,
+      durationSec: 512,
+      outcome: 'Connected · engineer booked for Thursday',
+    },
+    {
+      id: 'c-done-pemberton',
+      accountId: 'pemberton',
+      accountName: 'Pemberton & Co',
+      contact: 'James Pemberton',
+      phone: '+1 (415) 555-0182',
+      owner: 'Rae Whitlock',
+      intent: 'risk',
+      status: 'completed',
+      reason: 'Billing-incident recovery before renewal',
+      at: now - DAY - 2 * HR,
+      durationSec: 374,
+      outcome: 'Connected · credit accepted, downgrade paused',
+    },
+    {
+      id: 'c-done-kestrel',
+      accountId: 'kestrel',
+      accountName: 'Kestrel Bank',
+      contact: 'Margaret Lowe',
+      phone: '+1 (917) 555-0108',
+      owner: 'Priya Sundar',
+      intent: 'opportunity',
+      status: 'completed',
+      reason: 'Early-renewal thank-you + expansion',
+      at: now - 2 * DAY - 3 * HR,
+      durationSec: 268,
+      outcome: 'Connected · $120k expansion signed',
+    },
+    {
+      id: 'c-miss-helix',
+      accountId: 'helix',
+      accountName: 'Helix Robotics',
+      contact: 'Priya Nair',
+      phone: '+1 (512) 555-0117',
+      owner: 'Anika Roth',
+      intent: 'risk',
+      status: 'missed',
+      reason: 'New-champion outreach after sponsor left',
+      at: now - DAY - 6 * HR,
+      outcome: 'No answer · voicemail left',
+    },
+  ];
+}

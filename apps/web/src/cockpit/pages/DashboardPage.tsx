@@ -75,16 +75,16 @@ export function DashboardPage() {
         </span>
       </div>
 
-      <div style={{ display: 'flex', gap: 18, alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', gap: agentOpen ? 14 : 18, alignItems: 'flex-start' }}>
         <div
           style={{
             flex: 1,
             minWidth: 0,
-            overflowX: 'auto',
-            paddingBottom: 6,
             display: 'grid',
-            gridTemplateColumns: `repeat(${cols}, minmax(280px, 1fr))`,
-            gap: 12,
+            // minmax(0, 1fr) lets all columns compress to share the row evenly, so the
+            // Agent panel never forces a horizontal scrollbar or clips the Pending column.
+            gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+            gap: agentOpen ? 10 : 12,
             alignItems: 'start',
           }}
         >

@@ -9,9 +9,17 @@ import {
   type ReactNode,
 } from 'react';
 import { type BoardTier } from '../domain/health.js';
-import { type AccountVM, type FeedActor, type FeedResolution, type FeedSeed } from '../domain/types.js';
+import {
+  type AccountVM,
+  type CallRecord,
+  type FeedActor,
+  type FeedIntent,
+  type FeedResolution,
+  type FeedSeed,
+} from '../domain/types.js';
+import { formatCallWhen } from '../domain/calls.js';
 import { ackEscalation, placeVoiceCall, useCockpitData, type DataSource } from '../data/useCockpitData.js';
-import { INTEGRATIONS, SEED_USERS } from '../data/seed.js';
+import { INTEGRATIONS, makeSeedCalls, SEED_USERS } from '../data/seed.js';
 
 export type ThemeName = 'light' | 'dark';
 
@@ -68,6 +76,15 @@ interface CockpitContextValue {
   // feed
   feedItems: FeedItem[];
   triageCount: number;
+  // call log
+  calls: CallRecord[];
+  upcomingCallCount: number;
+  callScheduler: { accountId: string; feedId?: string } | null;
+  openCallScheduler: (accountId: string, feedId?: string) => void;
+  closeCallScheduler: () => void;
+  confirmCall: (accountId: string, at: number, feedId?: string) => void;
+  startCall: (callId: string) => void;
+  cancelCall: (callId: string) => void;
   // identity
   users: typeof SEED_USERS;
   currentUser: (typeof SEED_USERS)[number];
@@ -148,6 +165,8 @@ export function CockpitProvider({ children }: { children: ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => readFlag('rick.rail', false));
   const [agentOpen, setAgentOpenState] = useState(() => readFlag('sentrycs.agentOpen', true));
   const [settings, setSettings] = useState<CockpitSettings>(DEFAULT_SETTINGS);
+  const [calls, setCalls] = useState<CallRecord[]>(() => makeSeedCalls(Date.now()));
+  const [callScheduler, setCallScheduler] = useState<{ accountId: string; feedId?: string } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -225,6 +244,80 @@ export function CockpitProvider({ children }: { children: ReactNode }) {
     [currentUserName],
   );
 
+  const openCallScheduler = useCallback(
+    (accountId: string, feedId?: string) => setCallScheduler({ accountId, feedId }),
+    [],
+  );
+  const closeCallScheduler = useCallback(() => setCallScheduler(null), []);
+
+  const confirmCall = useCallback(
+    (accountId: string, at: number, feedId?: string) => {
+      const account = accounts.find((a) => a.id === accountId);
+      const now = Date.now();
+      const immediate = at <= now + 30000; // within 30s reads as "call now"
+      const when = immediate ? now : at;
+      const intent: FeedIntent = account
+        ? account.health === 'green'
+          ? 'opportunity'
+          : account.health === 'red'
+            ? 'risk'
+            : 'neutral'
+        : 'neutral';
+      const record: CallRecord = {
+        id: `c-${accountId}-${when}`,
+        accountId,
+        accountName: account?.name ?? accountId,
+        contact: account?.contact.name ?? '',
+        phone: account?.contact.phone ?? '',
+        owner: account?.owner ?? currentUser.name,
+        intent,
+        status: immediate ? 'live' : 'scheduled',
+        reason: account?.signalLine ?? 'Outbound call',
+        at: when,
+      };
+      setCalls((cs) => [record, ...cs.filter((c) => c.id !== record.id)]);
+      if (immediate) void placeVoiceCall(accountId);
+      if (feedId) setFeedStatus((s) => ({ ...s, [feedId]: 'call' }));
+      setCallScheduler(null);
+      showToast(
+        immediate
+          ? `Call dispatched to ${record.accountName} · Twilio voice agent`
+          : `Call scheduled · ${record.accountName} · ${formatCallWhen(when, now)}`,
+      );
+    },
+    [accounts, currentUser, showToast],
+  );
+
+  const startCall = useCallback(
+    (callId: string) => {
+      setCalls((cs) => {
+        const target = cs.find((c) => c.id === callId);
+        if (target) {
+          void placeVoiceCall(target.accountId);
+          showToast(`Call dispatched to ${target.accountName} · Twilio voice agent`);
+        }
+        return cs.map((c) => (c.id === callId ? { ...c, status: 'live', at: Date.now() } : c));
+      });
+    },
+    [showToast],
+  );
+
+  const cancelCall = useCallback(
+    (callId: string) => {
+      setCalls((cs) => {
+        const target = cs.find((c) => c.id === callId);
+        if (target) showToast(`Scheduled call cancelled · ${target.accountName}`);
+        return cs.filter((c) => c.id !== callId);
+      });
+    },
+    [showToast],
+  );
+
+  const upcomingCallCount = useMemo(
+    () => calls.filter((c) => c.status === 'scheduled' || c.status === 'live').length,
+    [calls],
+  );
+
   const feedItems = useMemo<FeedItem[]>(() => {
     const byId = new Map(accounts.map((a) => [a.id, a]));
     const RESOLUTION_LABEL: Record<FeedResolution, string> = {
@@ -261,10 +354,8 @@ export function CockpitProvider({ children }: { children: ReactNode }) {
             : f.intent === 'opportunity'
               ? 'var(--rag-green-text)'
               : 'var(--accent-text)',
-        call: () => {
-          void placeVoiceCall(f.accountId);
-          resolve('call', `Call dispatched to ${name} · Twilio voice agent`);
-        },
+        // Opens the scheduler; the dispatch + resolution happen on confirm.
+        call: () => openCallScheduler(f.accountId, f.id),
         email: () => resolve('email', `Email sent to ${name} · via n8n`),
         sms: () => resolve('sms', `SMS sent to ${name} · via Twilio`),
         escalate: () => {
@@ -275,7 +366,7 @@ export function CockpitProvider({ children }: { children: ReactNode }) {
         dismiss: () => resolve('dismissed', `Signal dismissed · ${name}`),
       };
     });
-  }, [feed, accounts, feedStatus, feedActor, showToast]);
+  }, [feed, accounts, feedStatus, feedActor, showToast, openCallScheduler]);
 
   const triageCount = useMemo(() => feedItems.filter((i) => i.open).length, [feedItems]);
 
@@ -295,6 +386,14 @@ export function CockpitProvider({ children }: { children: ReactNode }) {
     moveTo,
     feedItems,
     triageCount,
+    calls,
+    upcomingCallCount,
+    callScheduler,
+    openCallScheduler,
+    closeCallScheduler,
+    confirmCall,
+    startCall,
+    cancelCall,
     users: SEED_USERS,
     currentUser,
     setCurrentUser,

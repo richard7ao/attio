@@ -29,7 +29,7 @@ const cardLabelStyle = {
 
 export function AccountProfilePage() {
   const { id } = useParams();
-  const { accountById, showToast } = useCockpit();
+  const { accountById, showToast, openCallScheduler } = useCockpit();
   const a = id ? accountById(id) : undefined;
 
   if (!a) {
@@ -56,7 +56,7 @@ export function AccountProfilePage() {
   const sparkTone = a.health === 'red' ? 'red' : a.health === 'amber' ? 'amber' : 'green';
   const barColor = `var(--rag-${a.health})`;
 
-  const placeCall = () => showToast(`Call dispatched to ${a.name} · Twilio voice agent`);
+  const placeCall = () => openCallScheduler(a.id);
   const escalate = () => showToast(`Escalated to human · ${a.name}`);
 
   return (
