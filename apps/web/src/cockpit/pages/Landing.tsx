@@ -100,13 +100,13 @@ export function Landing() {
             Rick
           </span>
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 28 }}>
-            <a href="#/" style={navLinkStyle}>
+            <a href="#/product" style={navLinkStyle} onClick={(e) => { e.preventDefault(); navigate('/product'); }}>
               Product
             </a>
-            <a href="#/" style={navLinkStyle}>
+            <a href="#/how-it-works" style={navLinkStyle} onClick={(e) => { e.preventDefault(); navigate('/how-it-works'); }}>
               How it works
             </a>
-            <a href="#/" style={navLinkStyle}>
+            <a href="#/attio" style={navLinkStyle} onClick={(e) => { e.preventDefault(); navigate('/attio'); }}>
               Built on Attio
             </a>
             <Button variant="primary" size="sm" onClick={goDash}>
