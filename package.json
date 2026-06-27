@@ -1,0 +1,19 @@
+{
+  "name": "attio",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Attio outreach platform monorepo.",
+  "workspaces": [
+    "apps/frontend/*",
+    "apps/backend/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "lint": "echo \"add per-app lint scripts\" && exit 0",
+    "build": "echo \"add per-app build scripts\" && exit 0",
+    "dev": "echo \"add per-app dev scripts\" && exit 0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
