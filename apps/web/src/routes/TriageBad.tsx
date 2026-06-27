@@ -22,6 +22,7 @@ const money = (n: number | null) => (n == null ? null : `$${Math.round(n).toLoca
 export function TriageBad() {
   const [rows, setRows] = useState<RiskRow[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
+  const [pushed, setPushed] = useState<Record<string, string>>({});
 
   const refresh = useCallback(async () => {
     const { data } = await api<{ data: RiskRow[] }>('/triage/risk');
@@ -46,6 +47,19 @@ export function TriageBad() {
     },
     [refresh],
   );
+
+  const pushToAttio = useCallback(async (companyId: string) => {
+    setBusy(companyId);
+    setPushed((p) => ({ ...p, [companyId]: 'pushing…' }));
+    try {
+      await api(`/attio/push/${companyId}`, { method: 'POST' });
+      setPushed((p) => ({ ...p, [companyId]: 'pushed ✓' }));
+    } catch {
+      setPushed((p) => ({ ...p, [companyId]: 'failed' }));
+    } finally {
+      setBusy(null);
+    }
+  }, []);
 
   return (
     <section>
@@ -78,6 +92,12 @@ export function TriageBad() {
                 </button>
               )}
               {r.acked && <span style={{ color: '#6b7280', fontSize: 13 }}>claimed</span>}
+              <button onClick={() => void pushToAttio(r.companyId)} disabled={busy === r.companyId}>
+                Push to Attio
+              </button>
+              {pushed[r.companyId] && (
+                <span style={{ color: '#6b7280', fontSize: 12 }}>{pushed[r.companyId]}</span>
+              )}
             </div>
             <div style={{ color: '#6b7280', fontSize: 13, marginTop: 4 }}>{r.reason}</div>
             {r.briefStatus === 'ready' ? (

@@ -1,5 +1,6 @@
 import { getCompanyContext, latestOpenEscalationId, updateEscalationBrief } from '@attio/db';
 import type { AccountBrief, AccountContext } from '@attio/shared';
+import { attioPushEnabled, pushBriefToAttio } from '../attio/push.js';
 import { fallbackBrief } from './fallback.js';
 import { mubitBrief, mubitEnabled, mubitRemember } from './mubit.js';
 import { superlinkBrief, superlinkEnabled } from './superlink.js';
@@ -45,5 +46,14 @@ export async function generateAndSaveBrief(
   if (!brief) return { brief: null, escalationId: null };
   const escalationId = await latestOpenEscalationId(companyId);
   if (escalationId) await updateEscalationBrief(escalationId, brief);
+  // Surface the result in Attio (fields + note + task + churn list). Best-effort:
+  // a CRM write must never break the churn flow.
+  if (attioPushEnabled()) {
+    try {
+      await pushBriefToAttio(companyId, brief);
+    } catch {
+      /* best-effort */
+    }
+  }
   return { brief, escalationId };
 }

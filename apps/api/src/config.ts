@@ -24,6 +24,10 @@ const envSchema = z.object({
   // Attio CRM
   ATTIO_API_KEY: optionalSecret,
   ATTIO_API_BASE_URL: z.string().url().default('https://api.attio.com/v2'),
+  // Where churn write-back lands in Attio.
+  ATTIO_CHURN_LIST: z.string().default('attio_churn'),
+  // Workspace member to assign call tasks to; if unset, the first member is used.
+  ATTIO_TASK_ASSIGNEE_ID: optionalSecret,
 
   // Stripe
   STRIPE_API_KEY: optionalSecret,

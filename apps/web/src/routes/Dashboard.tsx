@@ -86,11 +86,25 @@ export function Dashboard() {
     [refresh],
   );
 
+  const pushRiskToAttio = useCallback(async () => {
+    setBusy('attio');
+    try {
+      await api('/attio/push-risk', { method: 'POST' });
+    } finally {
+      setBusy(null);
+    }
+  }, []);
+
   const topRisk = companies.filter((c) => c.status !== 'green').slice(0, 8);
 
   return (
     <section>
-      <h1>Dashboard</h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <h1 style={{ flex: 1 }}>Dashboard</h1>
+        <button onClick={() => void pushRiskToAttio()} disabled={busy === 'attio'}>
+          {busy === 'attio' ? 'pushing…' : 'Push at-risk to Attio'}
+        </button>
+      </div>
       <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
         <Card label="Companies" value={companies.length} />
         <Card label="Red" value={counts.red} color={STATUS_COLOR.red} />
