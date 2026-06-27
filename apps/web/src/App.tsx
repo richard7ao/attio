@@ -19,9 +19,10 @@ export function App() {
         <Route path="/auditing" element={<Auditing />} />
         <Route path="/triage/good" element={<TriageGood />} />
         <Route path="/triage/bad" element={<TriageBad />} />
-        <Route path="/simulator" element={<Simulator />} />
         <Route path="/users/:userId/reach-outs" element={<AllReachOuts />} />
       </Route>
+      {/* Standalone control panel — intentionally outside the app shell. */}
+      <Route path="/simulator" element={<Simulator />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

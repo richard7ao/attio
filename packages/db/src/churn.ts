@@ -273,7 +273,16 @@ interface ContextParts {
   churn?: { score: number; status: ChurnStatus; reason: string | null };
   cs?: { arr: number | null; stage: string | null; health: string | null };
   contracts: { value: number | null }[];
-  signals: { type: string; value: number | null; active: boolean }[];
+  signals: { type: string; value: number | null; active: boolean; metadata?: unknown }[];
+}
+
+/** Free-text note attached to a signal (e.g. a custom support ticket body). */
+function signalNote(metadata: unknown): string | null {
+  if (metadata && typeof metadata === 'object' && 'note' in metadata) {
+    const note = (metadata as { note?: unknown }).note;
+    if (typeof note === 'string' && note.trim().length > 0) return note;
+  }
+  return null;
 }
 
 function buildContext(companyId: string, p: ContextParts): AccountContext | null {
@@ -292,7 +301,9 @@ function buildContext(companyId: string, p: ContextParts): AccountContext | null
       (max, r) => (r.value != null && (max == null || r.value > max) ? r.value : max),
       null,
     ),
-    activeSignals: p.signals.filter((r) => r.active).map((r) => ({ type: r.type, value: r.value })),
+    activeSignals: p.signals
+      .filter((r) => r.active)
+      .map((r) => ({ type: r.type, value: r.value, note: signalNote(r.metadata) })),
   };
 }
 
@@ -331,6 +342,7 @@ export async function getCompanyContext(companyId: string): Promise<AccountConte
           type: pg.companySignals.type,
           value: pg.companySignals.value,
           active: pg.companySignals.active,
+          metadata: pg.companySignals.metadata,
         })
         .from(pg.companySignals)
         .where(eq(pg.companySignals.companyId, companyId)),
@@ -377,6 +389,7 @@ export async function getCompanyContext(companyId: string): Promise<AccountConte
       type: sqlite.companySignals.type,
       value: sqlite.companySignals.value,
       active: sqlite.companySignals.active,
+      metadata: sqlite.companySignals.metadata,
     })
     .from(sqlite.companySignals)
     .where(eq(sqlite.companySignals.companyId, companyId))

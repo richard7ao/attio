@@ -17,7 +17,11 @@ const money = (n: number | null) => (n == null ? 'n/a' : `$${Math.round(n).toLoc
 
 /** Human-readable churn drivers derived from the account's active signals. */
 export function churnDriversText(ctx: AccountContext): string {
-  const drivers = ctx.activeSignals.map((s) => DRIVER_LABEL[s.type] ?? s.type);
+  const drivers = ctx.activeSignals.map((s) => {
+    const label = DRIVER_LABEL[s.type] ?? s.type;
+    // Surface any free-text note (e.g. a custom support ticket body).
+    return s.note ? `${label}: ${s.note}` : label;
+  });
   return drivers.length > 0 ? drivers.join('; ') : 'No active risk signals';
 }
 

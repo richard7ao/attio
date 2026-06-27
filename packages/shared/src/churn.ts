@@ -51,7 +51,7 @@ export interface AccountContext {
   csStage: string | null;
   csHealth: string | null;
   contractValue: number | null;
-  activeSignals: { type: string; value: number | null }[];
+  activeSignals: { type: string; value: number | null; note?: string | null }[];
 }
 
 /** Full account brief written into the escalation columns. */
