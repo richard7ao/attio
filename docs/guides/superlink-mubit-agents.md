@@ -124,11 +124,39 @@ On a warm lane this returns in ~2.5–4s. Tips:
 - Set `max_tokens` — the 27B will otherwise generate more than you need.
 - Discover models with `GET {BASE}/models`. Other models exist but may cold-load.
 
-> **Dedicated pools (advanced):** to pin a non-hot-lane model warm, create a pool
-> (`POST /v1/pools`) then target it with `SUPERLINK_GPU=<pool>/<profile>`.
-> **Pool creation needs an admin token** — the restricted `SL-` key returns
-> `403 Admin token required`. The hot lanes above are already cluster-warm, so for
-> most work you don't need a pool.
+### Dedicated pools / model pinning (admin token)
+
+To keep a specific model warm on your own worker, create a pool. **This needs an
+admin token** (the restricted `SL-` key returns `403 Admin token required`):
+
+```bash
+# create + pin (admin token in Authorization)
+curl -X POST "$SUPERLINK_BASE_URL/pools" \
+  -H "Authorization: Bearer $SUPERLINK_ADMIN_KEY" -H "Content-Type: application/json" \
+  -d '{"name":"my-pool","gpus":{"<profile>":1},"bundle":"sglang",
+       "minimum_worker_count":1,"pinned_models":["<model>"]}'
+
+# then route requests to it
+#   header  X-SIE-Pool: my-pool   +   X-SIE-MACHINE-PROFILE: <profile>
+#   i.e.    SUPERLINK_GPU=my-pool/<profile>
+
+curl -X DELETE "$SUPERLINK_BASE_URL/pools/my-pool" \
+  -H "Authorization: Bearer $SUPERLINK_ADMIN_KEY"   # clean up when done
+```
+
+In this repo: `pnpm --filter @attio/api superlink:pool create|delete|list`
+(reads `SUPERLINK_ADMIN_KEY`).
+
+> ### ⚠️ DANGER: pinning a shared hot lane breaks it for everyone
+> A hot-lane profile like `rtx6000-qwen27` may have **exactly one** GPU. Creating a
+> pinned pool on that profile **takes that worker over**, and the shared lane then
+> returns `500 inference_error ("SGLang stream terminated")` for *all* teams until
+> the pool is deleted **and** the worker recovers (which is not instant). We hit
+> this live. Rules:
+> - Don't pin on the single GPU of a shared hot lane unless you own the cluster.
+> - Pin only on a **spare/dedicated** machine profile, or coordinate first.
+> - For most work you don't need a pool at all — the documented hot lanes are
+>   already cluster-warm. Just set `SUPERLINK_GPU` to the profile.
 
 ---
 
@@ -293,7 +321,7 @@ await mubitRemember(runId, summarize(result));
 | Mubit `query` returns "I do not know." | Expected with no grounded memory — treat low `confidence`/abstain as "no lessons" and (in a race) **reject** so the other provider wins. |
 | Mubit `ingest` → `422 missing field` | Each item needs `item_id`, `content_type:"text"`, and `content`. |
 | Mubit `ingest` is async | A just-written lesson isn't instantly recallable (`status:"queued"`). |
-| Creating a Superlink pool → `403 Admin token required` | The restricted `SL-` key can't create pools. Use the cluster-warm hot lanes, or get an admin token. |
+| Creating a Superlink pool → `403 Admin token required` | The restricted `SL-` key can't create pools — use `SUPERLINK_ADMIN_KEY` (admin token). But **don't pin a shared hot lane** (see the DANGER box in §3): it 500s the lane for everyone. Prefer the cluster-warm hot lanes. |
 | Treating memory as required | Recall/remember are **best-effort** — never let them block or fail the agent. |
 
 ---

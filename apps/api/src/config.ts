@@ -40,11 +40,15 @@ const envSchema = z.object({
   SUPERLINK_API_KEY: optionalSecret,
   // OpenAI-compatible chat base URL for the Superlinked SIE gateway (must end in /v1).
   SUPERLINK_BASE_URL: optionalSecret,
-  // Default to the warm "larger generation" hot lane (preloaded by the cluster).
-  SUPERLINK_MODEL: z.string().default('Qwen/Qwen3.6-27B:rtx-pro-6000'),
-  // GPU machine profile (hot lane), or "pool/profile" to target a dedicated pool.
-  // Sent as the X-SIE-MACHINE-PROFILE (+ X-SIE-Pool) header so requests hit warm GPUs.
-  SUPERLINK_GPU: z.string().default('rtx6000-qwen27'),
+  // Default to a model that's reliably warm on the shared default pool. To use a
+  // dedicated hot lane instead, set SUPERLINK_GPU (e.g. rtx6000-qwen27 for the 27B).
+  SUPERLINK_MODEL: z.string().default('Qwen/Qwen3-4B-Instruct-2507'),
+  // Optional GPU machine profile (hot lane), or "pool/profile" for a dedicated pool.
+  // When set, sent as X-SIE-MACHINE-PROFILE (+ X-SIE-Pool). Empty = default routing.
+  SUPERLINK_GPU: z.string().default(''),
+  // Admin token for SIE pool management / model pinning (POST /v1/pools). NOT used
+  // on the request path — only by admin tooling (see scripts/superlink-pool.ts).
+  SUPERLINK_ADMIN_KEY: optionalSecret,
   MUBIT_API_KEY: optionalSecret,
   MUBIT_BASE_URL: z.string().default('https://api.mubit.ai'),
   MUBIT_AGENT: z.string().default('head-of-data'),

@@ -9,6 +9,7 @@
     "build": "tsup",
     "start": "node dist/server.js",
     "sync:attio": "tsx src/scripts/sync-attio.ts",
+    "superlink:pool": "tsx src/scripts/superlink-pool.ts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
