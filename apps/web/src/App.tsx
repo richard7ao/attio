@@ -1,29 +1,29 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { AppLayout } from './components/AppLayout.js';
-import { Landing } from './routes/Landing.js';
-import { Demo } from './routes/Demo.js';
-import { Dashboard } from './routes/Dashboard.js';
-import { Auditing } from './routes/Auditing.js';
-import { TriageGood } from './routes/TriageGood.js';
-import { TriageBad } from './routes/TriageBad.js';
-import { AllReachOuts } from './routes/AllReachOuts.js';
-import { Simulator } from './routes/Simulator.js';
+import { CockpitProvider } from './cockpit/state/CockpitProvider.js';
+import { AppShell } from './cockpit/shell/AppShell.js';
+import { Landing } from './cockpit/pages/Landing.js';
+import { DashboardPage } from './cockpit/pages/DashboardPage.js';
+import { FeedPage } from './cockpit/pages/FeedPage.js';
+import { AccountsPage } from './cockpit/pages/AccountsPage.js';
+import { SignalsPage } from './cockpit/pages/SignalsPage.js';
+import { SettingsPage } from './cockpit/pages/SettingsPage.js';
+import { AccountProfilePage } from './cockpit/pages/AccountProfilePage.js';
 
 export function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/demo" element={<Demo />} />
-      <Route element={<AppLayout />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/auditing" element={<Auditing />} />
-        <Route path="/triage/good" element={<TriageGood />} />
-        <Route path="/triage/bad" element={<TriageBad />} />
-        <Route path="/users/:userId/reach-outs" element={<AllReachOuts />} />
-      </Route>
-      {/* Standalone control panel — intentionally outside the app shell. */}
-      <Route path="/simulator" element={<Simulator />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <CockpitProvider>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route element={<AppShell />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/feed" element={<FeedPage />} />
+          <Route path="/accounts" element={<AccountsPage />} />
+          <Route path="/signals" element={<SignalsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/account/:id" element={<AccountProfilePage />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </CockpitProvider>
   );
 }
