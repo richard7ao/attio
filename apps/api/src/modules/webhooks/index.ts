@@ -1,5 +1,6 @@
 import { ingestSignal } from '@attio/db';
 import type { FastifyInstance } from 'fastify';
+import { generateAndSaveBrief } from '../analysis/brief.js';
 
 interface StripeEvent {
   type?: string;
@@ -43,6 +44,7 @@ export async function webhookRoutes(app: FastifyInstance): Promise<void> {
       active: true,
       metadata: { stripeEventType: event.type },
     });
+    if (churn.escalated) await generateAndSaveBrief(churn.companyId);
     return { ok: true, churn };
   });
 

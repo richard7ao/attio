@@ -28,6 +28,15 @@ const envSchema = z.object({
   // Stripe
   STRIPE_API_KEY: optionalSecret,
   STRIPE_WEBHOOK_SECRET: optionalSecret,
+
+  // Analysis layer: Superlink (LLM provider) + Mubit (agent memory)
+  SUPERLINK_API_KEY: optionalSecret,
+  // OpenAI-compatible chat base URL. *CHECK THIS* once the Superlink endpoint is confirmed.
+  SUPERLINK_BASE_URL: optionalSecret,
+  SUPERLINK_MODEL: z.string().default('gpt-4o-mini'),
+  MUBIT_API_KEY: optionalSecret,
+  MUBIT_BASE_URL: z.string().default('https://api.mubit.ai'),
+  MUBIT_AGENT: z.string().default('head-of-data'),
 });
 
 /** Parsed, validated environment. Fails fast on misconfiguration. */

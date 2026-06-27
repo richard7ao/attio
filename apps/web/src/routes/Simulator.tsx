@@ -17,6 +17,10 @@ interface Escalation {
   reason: string | null;
   acked: boolean;
   createdAt: string;
+  briefStatus: string;
+  briefSummary: string | null;
+  briefRecommendedPlay: string | null;
+  briefArrAtRisk: number | null;
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -99,10 +103,29 @@ export function Simulator() {
       ) : (
         <ul>
           {escalations.map((e) => (
-            <li key={e.id} style={{ marginBottom: 6 }}>
+            <li key={e.id} style={{ marginBottom: 12 }}>
               <Dot status={e.status} />
               {e.companyId.slice(0, 8)} — {e.reason} (score {Math.round(e.score)}){' '}
               <button onClick={() => void ack(e.id)}>ack</button>
+              {e.briefStatus === 'ready' && (
+                <div
+                  style={{
+                    marginTop: 4,
+                    marginLeft: 18,
+                    padding: 8,
+                    background: '#f9fafb',
+                    borderLeft: '3px solid #ef4444',
+                    fontSize: 13,
+                  }}
+                >
+                  <div>
+                    <strong>Head of Data brief:</strong> {e.briefSummary}
+                  </div>
+                  <div>
+                    <strong>Play:</strong> {e.briefRecommendedPlay}
+                  </div>
+                </div>
+              )}
             </li>
           ))}
         </ul>

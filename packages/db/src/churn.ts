@@ -1,9 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import {
   computeChurn,
+  type AccountBrief,
+  type AccountContext,
   type ChurnResult,
   type ChurnSignalInput,
   type ChurnSignalType,
+  type ChurnStatus,
   type SignalSource,
 } from '@attio/shared';
 import { and, desc, eq } from 'drizzle-orm';
@@ -261,6 +264,177 @@ export async function listEscalations(opts: ListEscalationsOptions = {}): Promis
     opts.unclaimedOnly ? eq(t.acked, false) : undefined,
   );
   return (db as SqliteDb).select().from(t).where(where).orderBy(desc(t.createdAt)).all();
+}
+
+// --- account brief (Head-of-Data analysis) ---------------------------------
+
+interface ContextParts {
+  company?: { name: string | null; domain: string | null };
+  churn?: { score: number; status: ChurnStatus; reason: string | null };
+  cs?: { arr: number | null; stage: string | null; health: string | null };
+  contracts: { value: number | null }[];
+  signals: { type: string; value: number | null; active: boolean }[];
+}
+
+function buildContext(companyId: string, p: ContextParts): AccountContext | null {
+  if (!p.company) return null;
+  return {
+    companyId,
+    name: p.company.name,
+    domain: p.company.domain,
+    churnScore: p.churn?.score ?? 0,
+    churnStatus: p.churn?.status ?? 'green',
+    churnReason: p.churn?.reason ?? null,
+    arr: p.cs?.arr ?? null,
+    csStage: p.cs?.stage ?? null,
+    csHealth: p.cs?.health ?? null,
+    contractValue: p.contracts.reduce<number | null>(
+      (max, r) => (r.value != null && (max == null || r.value > max) ? r.value : max),
+      null,
+    ),
+    activeSignals: p.signals.filter((r) => r.active).map((r) => ({ type: r.type, value: r.value })),
+  };
+}
+
+/** Assemble the full account context the analysis agent reasons over. */
+export async function getCompanyContext(companyId: string): Promise<AccountContext | null> {
+  const db = await createDb();
+  if (getDatabaseDriver() === 'postgres') {
+    const pdb = db as PostgresDb;
+    const [company, churn, cs, contracts, signals] = await Promise.all([
+      pdb
+        .select({ name: pg.attioCompanies.name, domain: pg.attioCompanies.domain })
+        .from(pg.attioCompanies)
+        .where(eq(pg.attioCompanies.id, companyId)),
+      pdb
+        .select({
+          score: pg.companyChurn.score,
+          status: pg.companyChurn.status,
+          reason: pg.companyChurn.reason,
+        })
+        .from(pg.companyChurn)
+        .where(eq(pg.companyChurn.companyId, companyId)),
+      pdb
+        .select({
+          arr: pg.attioCustomerSuccess.arr,
+          stage: pg.attioCustomerSuccess.stage,
+          health: pg.attioCustomerSuccess.health,
+        })
+        .from(pg.attioCustomerSuccess)
+        .where(eq(pg.attioCustomerSuccess.companyId, companyId)),
+      pdb
+        .select({ value: pg.attioWonContracts.estimatedContractValue })
+        .from(pg.attioWonContracts)
+        .where(eq(pg.attioWonContracts.companyId, companyId)),
+      pdb
+        .select({
+          type: pg.companySignals.type,
+          value: pg.companySignals.value,
+          active: pg.companySignals.active,
+        })
+        .from(pg.companySignals)
+        .where(eq(pg.companySignals.companyId, companyId)),
+    ]);
+    return buildContext(companyId, {
+      company: company[0],
+      churn: churn[0],
+      cs: cs[0],
+      contracts,
+      signals,
+    });
+  }
+  const sdb = db as SqliteDb;
+  const company = sdb
+    .select({ name: sqlite.attioCompanies.name, domain: sqlite.attioCompanies.domain })
+    .from(sqlite.attioCompanies)
+    .where(eq(sqlite.attioCompanies.id, companyId))
+    .all();
+  const churn = sdb
+    .select({
+      score: sqlite.companyChurn.score,
+      status: sqlite.companyChurn.status,
+      reason: sqlite.companyChurn.reason,
+    })
+    .from(sqlite.companyChurn)
+    .where(eq(sqlite.companyChurn.companyId, companyId))
+    .all();
+  const cs = sdb
+    .select({
+      arr: sqlite.attioCustomerSuccess.arr,
+      stage: sqlite.attioCustomerSuccess.stage,
+      health: sqlite.attioCustomerSuccess.health,
+    })
+    .from(sqlite.attioCustomerSuccess)
+    .where(eq(sqlite.attioCustomerSuccess.companyId, companyId))
+    .all();
+  const contracts = sdb
+    .select({ value: sqlite.attioWonContracts.estimatedContractValue })
+    .from(sqlite.attioWonContracts)
+    .where(eq(sqlite.attioWonContracts.companyId, companyId))
+    .all();
+  const signals = sdb
+    .select({
+      type: sqlite.companySignals.type,
+      value: sqlite.companySignals.value,
+      active: sqlite.companySignals.active,
+    })
+    .from(sqlite.companySignals)
+    .where(eq(sqlite.companySignals.companyId, companyId))
+    .all();
+  return buildContext(companyId, {
+    company: company[0],
+    churn: churn[0],
+    cs: cs[0],
+    contracts,
+    signals,
+  });
+}
+
+/** Write a generated brief onto an escalation row. */
+export async function updateEscalationBrief(id: string, brief: AccountBrief): Promise<void> {
+  const db = await createDb();
+  const values = {
+    briefStatus: 'ready' as const,
+    briefSummary: brief.summary,
+    briefChurnDrivers: brief.churnDrivers,
+    briefRecommendedPlay: brief.recommendedPlay,
+    briefArrAtRisk: brief.arrAtRisk,
+    briefSource: brief.source,
+  };
+  if (getDatabaseDriver() === 'postgres') {
+    await (db as PostgresDb)
+      .update(pg.escalations)
+      .set({ ...values, briefGeneratedAt: new Date().toISOString() })
+      .where(eq(pg.escalations.id, id));
+    return;
+  }
+  (db as SqliteDb)
+    .update(sqlite.escalations)
+    .set({ ...values, briefGeneratedAt: new Date().toISOString() })
+    .where(eq(sqlite.escalations.id, id))
+    .run();
+}
+
+/** Most recent unacked escalation for a company (the one to brief), if any. */
+export async function latestOpenEscalationId(companyId: string): Promise<string | null> {
+  const db = await createDb();
+  if (getDatabaseDriver() === 'postgres') {
+    const rows = await (db as PostgresDb)
+      .select({ id: pg.escalations.id })
+      .from(pg.escalations)
+      .where(and(eq(pg.escalations.companyId, companyId), eq(pg.escalations.acked, false)))
+      .orderBy(desc(pg.escalations.createdAt))
+      .limit(1);
+    return rows[0]?.id ?? null;
+  }
+  const rows = (db as SqliteDb)
+    .select({ id: sqlite.escalations.id })
+    .from(sqlite.escalations)
+    .where(and(eq(sqlite.escalations.companyId, companyId), eq(sqlite.escalations.acked, false)))
+    .orderBy(desc(sqlite.escalations.createdAt))
+    .limit(1)
+    .all();
+  return rows[0]?.id ?? null;
 }
 
 /** Mark an escalation as picked up by the poller. */

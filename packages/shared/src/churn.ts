@@ -39,6 +39,30 @@ export const CHURN_WEIGHTS = {
   support_ticket: 15, // score += 15 per open support ticket
 } as const;
 
+/** Account context assembled for the Head-of-Data analysis. */
+export interface AccountContext {
+  companyId: string;
+  name: string | null;
+  domain: string | null;
+  churnScore: number;
+  churnStatus: ChurnStatus;
+  churnReason: string | null;
+  arr: number | null;
+  csStage: string | null;
+  csHealth: string | null;
+  contractValue: number | null;
+  activeSignals: { type: string; value: number | null }[];
+}
+
+/** Full account brief written into the escalation columns. */
+export interface AccountBrief {
+  summary: string;
+  churnDrivers: string;
+  recommendedPlay: string;
+  arrAtRisk: number | null;
+  source: string; // e.g. 'mubit+superlink' or 'fallback'
+}
+
 const clamp = (n: number) => Math.max(0, Math.min(100, n));
 
 /** Map a 0-100 score to a colour. >40 red, 10-40 amber, <10 green. */

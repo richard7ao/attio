@@ -2,6 +2,7 @@ import { ackEscalation, ingestSignal, listCompaniesWithChurn, listEscalations } 
 import { churnSignalTypeSchema, churnStatusSchema, signalSourceSchema } from '@attio/shared';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
+import { generateAndSaveBrief } from '../analysis/brief.js';
 
 const ingestBody = z.object({
   companyId: z.string().min(1),
@@ -27,6 +28,8 @@ export async function churnRoutes(app: FastifyInstance): Promise<void> {
     const parsed = ingestBody.safeParse(request.body);
     if (!parsed.success) return reply.badRequest(parsed.error.message);
     const outcome = await ingestSignal(parsed.data);
+    // When a company turns red, generate the Head-of-Data brief onto its escalation.
+    if (outcome.escalated) await generateAndSaveBrief(outcome.companyId);
     return { ok: true, churn: outcome };
   });
 

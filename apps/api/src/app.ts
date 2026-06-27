@@ -3,6 +3,7 @@ import sensible from '@fastify/sensible';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { config } from './config.js';
 import { dbPlugin } from './plugins/db.js';
+import { analysisRoutes } from './modules/analysis/index.js';
 import { attioRoutes } from './modules/attio/index.js';
 import { churnRoutes } from './modules/churn/index.js';
 import { healthRoutes } from './modules/health/index.js';
@@ -30,6 +31,7 @@ export async function buildApp(): Promise<FastifyInstance> {
       await api.register(triageRoutes);
       await api.register(attioRoutes);
       await api.register(churnRoutes);
+      await api.register(analysisRoutes);
       await api.register(voiceRoutes);
       await api.register(webhookRoutes);
     },

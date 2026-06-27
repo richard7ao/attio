@@ -146,4 +146,14 @@ export const escalations = sqliteTable('escalations', {
   acked: integer('acked', { mode: 'boolean' }).notNull().default(false),
   ackedAt: text('acked_at'),
   createdAt: text('created_at').notNull().default(now),
+  // Account brief produced by the Mubit "Head of Data" agent (via Superlink LLM).
+  briefStatus: text('brief_status', { enum: ['pending', 'ready', 'failed'] })
+    .notNull()
+    .default('pending'),
+  briefSummary: text('brief_summary'),
+  briefChurnDrivers: text('brief_churn_drivers'),
+  briefRecommendedPlay: text('brief_recommended_play'),
+  briefArrAtRisk: real('brief_arr_at_risk'),
+  briefSource: text('brief_source'),
+  briefGeneratedAt: text('brief_generated_at'),
 });

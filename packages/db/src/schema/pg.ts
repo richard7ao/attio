@@ -159,4 +159,14 @@ export const escalations = pgTable('escalations', {
   acked: boolean('acked').notNull().default(false),
   ackedAt: timestamp('acked_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  // Account brief produced by the Mubit "Head of Data" agent (via Superlink LLM).
+  briefStatus: text('brief_status', { enum: ['pending', 'ready', 'failed'] })
+    .notNull()
+    .default('pending'),
+  briefSummary: text('brief_summary'),
+  briefChurnDrivers: text('brief_churn_drivers'),
+  briefRecommendedPlay: text('brief_recommended_play'),
+  briefArrAtRisk: doublePrecision('brief_arr_at_risk'),
+  briefSource: text('brief_source'),
+  briefGeneratedAt: timestamp('brief_generated_at', { withTimezone: true, mode: 'string' }),
 });
