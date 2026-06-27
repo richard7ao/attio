@@ -111,6 +111,7 @@ export async function voiceRoutes(app: FastifyInstance): Promise<void> {
       'Cache-Control': 'no-cache, no-transform',
       Connection: 'keep-alive',
       'X-Accel-Buffering': 'no',
+      'Access-Control-Allow-Origin': request.headers.origin ?? '*',
     });
     const write = (event: string, data: unknown) =>
       raw.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
