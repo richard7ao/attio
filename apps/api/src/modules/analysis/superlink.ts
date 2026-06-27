@@ -14,12 +14,30 @@ const SYSTEM_PROMPT =
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 /**
+ * Route to a warm GPU hot lane. SUPERLINK_GPU is a machine profile
+ * (e.g. `rtx6000-qwen27`) or `pool/profile`; the SIE gateway selects the lane
+ * from the X-SIE-MACHINE-PROFILE (+ X-SIE-Pool) headers.
+ */
+function laneHeaders(): Record<string, string> {
+  const gpu = config.SUPERLINK_GPU;
+  if (!gpu) return {};
+  const parts = gpu.split('/');
+  const pool = parts.length > 1 ? parts[0] : undefined;
+  const profile = parts.length > 1 ? parts[1] : parts[0];
+  const headers: Record<string, string> = {};
+  if (pool) headers['X-SIE-Pool'] = pool;
+  if (profile) headers['X-SIE-MACHINE-PROFILE'] = profile;
+  return headers;
+}
+
+/**
  * Generate a brief via the Superlink LLM (OpenAI-compatible chat completions).
  *
  * Verified against the Superlinked SIE gateway: `${SUPERLINK_BASE_URL}/chat/completions`
  * (base URL includes `/v1`) with Bearer auth and an OpenAI-shaped response.
- * SIE loads models on demand and returns `503 MODEL_LOADING` while warming up,
- * so we briefly retry; if it's still cold the caller falls back deterministically.
+ * Requests are pinned to a warm GPU hot lane via the X-SIE-MACHINE-PROFILE
+ * header (see laneHeaders). If a lane is cold it returns `503 MODEL_LOADING`,
+ * so we briefly retry; if still cold the caller falls back deterministically.
  */
 export async function superlinkBrief(
   ctx: AccountContext,
@@ -33,6 +51,7 @@ export async function superlinkBrief(
       { role: 'user', content: JSON.stringify(ctx) },
     ],
     response_format: { type: 'json_object' },
+    max_tokens: 512, // the brief JSON is small; cap output to keep latency low
   };
 
   let res!: Response;
@@ -42,6 +61,7 @@ export async function superlinkBrief(
       headers: {
         Authorization: `Bearer ${config.SUPERLINK_API_KEY}`,
         'Content-Type': 'application/json',
+        ...laneHeaders(),
       },
       body: JSON.stringify(body),
     });
