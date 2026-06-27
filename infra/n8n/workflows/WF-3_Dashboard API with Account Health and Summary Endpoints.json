@@ -1,0 +1,303 @@
+{
+  "name": "WF-3:Dashboard API with Account Health and Summary Endpoints",
+  "nodes": [
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.params.resource }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "summary",
+                    "id": "1"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.params.resource }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "accounts",
+                    "id": "2"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.params.resource }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "detail",
+                    "id": "3"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2936d7a0-bed7-4b4e-910c-220197e1b2cf",
+      "name": "Route by Endpoint",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "c0625480-7f54-47fa-a53b-ed5f3e47bb47",
+      "name": "Return Summary",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        912,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "7906ec42-91dc-4f25-bf27-5cb54686abf3",
+      "name": "Return Accounts List",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        912,
+        672
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "cf29a043-e617-4835-8618-f4c7f0f7e8ea",
+      "name": "Return Account Detail",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        912,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "path": "dashboard/:resource",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "b1527367-45fa-41c5-bc22-5b350304df57",
+      "name": "Dashboard API",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        240,
+        672
+      ],
+      "webhookId": "363f79a7-7187-4648-97f6-2c894dff7902"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  COUNT(CASE WHEN cc.status = 'red' THEN 1 END) as red_count,\n  COUNT(CASE WHEN cc.status = 'amber' THEN 1 END) as amber_count,\n  COUNT(CASE WHEN cc.status = 'green' THEN 1 END) as green_count,\n  COALESCE(SUM(CASE WHEN cc.status IN ('red', 'amber') THEN acs.arr ELSE 0 END), 0) as arr_at_risk\nFROM company_churn cc\nLEFT JOIN (\n  SELECT company_id, MAX(arr) as arr\n  FROM attio_customer_success\n  GROUP BY company_id\n) acs ON cc.company_id = acs.company_id",
+        "options": {}
+      },
+      "id": "697c344d-8db0-4493-8f57-6133a1215b35",
+      "name": "Fetch Summary Data",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        688,
+        480
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "zQJjt8Ehxe7qmoRe",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  cc.company_id,\n  ac.name as company_name,\n  cc.status as health_status,\n  COALESCE(acs.arr, 0) as arr,\n  COALESCE(e.escalation_count, 0) as escalation_count\nFROM company_churn cc\nLEFT JOIN attio_companies ac ON cc.company_id = ac.id\nLEFT JOIN (\n  SELECT company_id, MAX(arr) as arr\n  FROM attio_customer_success\n  GROUP BY company_id\n) acs ON cc.company_id = acs.company_id\nLEFT JOIN (\n  SELECT company_id, COUNT(*) as escalation_count\n  FROM escalations\n  GROUP BY company_id\n) e ON cc.company_id = e.company_id\nORDER BY ac.name",
+        "options": {}
+      },
+      "id": "6db5e087-6e42-4258-9359-443a7ee3aec4",
+      "name": "Fetch Accounts List",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        688,
+        672
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "zQJjt8Ehxe7qmoRe",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  cc.company_id,\n  ac.name as company_name,\n  cc.status as health_status,\n  COALESCE(acs.arr, 0) as arr,\n  json_agg(DISTINCT jsonb_build_object('date', e.created_at, 'status', e.status, 'reason', e.reason, 'summary', e.brief_summary, 'recommended_play', e.brief_recommended_play, 'arr_at_risk', e.brief_arr_at_risk, 'acked', e.acked)) FILTER (WHERE e.company_id IS NOT NULL) as escalations\nFROM company_churn cc\nLEFT JOIN attio_companies ac ON cc.company_id = ac.id\nLEFT JOIN (\n  SELECT company_id, MAX(arr) as arr\n  FROM attio_customer_success\n  GROUP BY company_id\n) acs ON cc.company_id = acs.company_id\nLEFT JOIN escalations e ON cc.company_id = e.company_id\nWHERE cc.company_id = '{{ $json.query.id }}'\nGROUP BY cc.company_id, ac.name, cc.status, acs.arr",
+        "options": {}
+      },
+      "id": "857d7142-0f4b-4188-b40e-e6161c9e2c58",
+      "name": "Fetch Account Detail",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        688,
+        864
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "zQJjt8Ehxe7qmoRe",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Route by Endpoint": {
+      "main": [
+        [
+          {
+            "node": "Fetch Summary Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch Accounts List",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch Account Detail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dashboard API": {
+      "main": [
+        [
+          {
+            "node": "Route by Endpoint",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return Accounts List": {
+      "main": [
+        []
+      ]
+    },
+    "Fetch Summary Data": {
+      "main": [
+        [
+          {
+            "node": "Return Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Accounts List": {
+      "main": [
+        [
+          {
+            "node": "Return Accounts List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Account Detail": {
+      "main": [
+        [
+          {
+            "node": "Return Account Detail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "f1df8e39-73aa-43fc-90f5-09589cda30ef",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4f46209b245bfb1e262537ad2793f2caccc44ecfe3d895b0804365aaaa4f0984"
+  },
+  "nodeGroups": [],
+  "id": "YzJsTuGJYdnhtocs",
+  "tags": []
+}
