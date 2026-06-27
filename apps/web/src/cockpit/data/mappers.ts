@@ -92,21 +92,23 @@ export function mapLiveAccounts(churn: ChurnRow[], opportunity: OpportunityRow[]
   const seen = new Set<string>();
   const inputs: AccountInput[] = [];
 
-  const push = (companyId: string, name: string, status: HealthTier, reason: string | null, arr: number) => {
+  const push = (companyId: string, name: string | null, status: HealthTier, reason: string | null, arr: number) => {
     if (seen.has(companyId)) return;
     seen.add(companyId);
     const { seats, seatsUsed, usage } = deriveSeatsAndUsage(arr, status);
     const opp = oppById.get(companyId);
+    const safeName = name ?? 'Unknown';
+    const slug = safeName.toLowerCase().replace(/[^a-z0-9]+/g, '') || 'account';
     inputs.push({
       id: companyId,
-      name,
-      domain: companyId.includes('.') ? companyId : `${name.toLowerCase().replace(/[^a-z0-9]+/g, '')}.com`,
+      name: safeName,
+      domain: companyId.includes('.') ? companyId : `${slug}.com`,
       owner: 'Unassigned',
       arr,
       seats,
       seatsUsed,
       renewalDays: renewalDaysFrom(opp?.value),
-      contact: { name: 'Account contact', title: 'Primary contact', phone: '—', email: `team@${name.toLowerCase().replace(/[^a-z0-9]+/g, '')}.com` },
+      contact: { name: 'Account contact', title: 'Primary contact', phone: '—', email: `team@${slug}.com` },
       signals: [{ type: signalForStatus(status, reason), note: reason ?? 'Signal detected by the engine', detected: 'live' }],
       usage,
       expansion: status === 'green' ? Math.round((opp?.value ?? arr * 0.15)) : 0,

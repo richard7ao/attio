@@ -1,0 +1,52 @@
+# Render Blueprint — deploys the @attio/api Fastify service as a free-tier web
+# service.  One command:  render blueprint deploy
+#
+# After deploy:
+#   1. Set the secret env vars in the Render dashboard (see .env.example).
+#   2. Update VITE_API_BASE_URL on Vercel to the Render URL.
+#   3. Register Attio webhooks against the Render URL:
+#        pnpm --filter @attio/api register:attio-webhooks https://attio-api.onrender.com
+services:
+  - type: web
+    name: attio-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      # Non-secret vars — safe to hardcode in the blueprint.
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_DRIVER
+        value: postgres
+      - key: CORS_ORIGIN
+        sync: false
+      # Secret vars — set these in the Render dashboard after the first deploy.
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: ATTIO_API_KEY
+        sync: false
+      - key: STRIPE_API_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: SUPERLINK_API_KEY
+        sync: false
+      - key: SUPERLINK_BASE_URL
+        sync: false
+      - key: SUPERLINK_MODEL
+        value: Qwen/Qwen3-4B-Instruct-2507
+      - key: MUBIT_API_KEY
+        sync: false
+      - key: MUBIT_BASE_URL
+        value: https://api.mubit.ai
+      - key: ATTIO_WEBHOOK_SECRET
+        sync: false
+      - key: VOICE_BASE_URL
+        sync: false
