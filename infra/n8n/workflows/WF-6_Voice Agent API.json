@@ -2,7 +2,9 @@
   "name": "WF-6: Voice Agent API (→ SLNG voice service)",
   "nodes": [
     {
-      "parameters": {},
+      "parameters": {
+        "inputSource": "passthrough"
+      },
       "id": "a1b2c3d4-0001-4000-8000-000000000001",
       "name": "Trigger: From WF-4",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
@@ -11,23 +13,41 @@
     },
     {
       "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  p.name  AS primary_contact_name,\n  p.phone AS primary_contact_phone\nFROM attio_people p\nWHERE p.company_id = '{{ $json.account_id }}'\nORDER BY p.phone NULLS LAST\nLIMIT 1",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0002-4000-8000-000000000002",
+      "name": "Fetch Contact",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [500, 400],
+      "credentials": {
+        "postgres": { "id": "zQJjt8Ehxe7qmoRe", "name": "Postgres account" }
+      }
+    },
+    {
+      "parameters": {
         "method": "POST",
         "url": "={{ $vars.VOICE_BASE_URL }}/calls",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ signal: { accountId: $json.account_id, accountName: $json.company_name, contactName: $json.primary_contact_name, toNumber: $json.primary_contact_phone, plan: $json.plan_tier, renewalDate: $json.renewal_date, healthScore: $json.health_score, goal: ($json.success_metric || $json.executive_summary || 'Churn rescue: understand the issue and retain the account.'), notes: $json.call_script } }) }}",
+        "jsonBody": "={{ JSON.stringify({ signal: { accountId: $('Trigger: From WF-4').item.json.account_id, accountName: $('Trigger: From WF-4').item.json.company_name, contactName: ($json.primary_contact_name || $('Trigger: From WF-4').item.json.primary_contact_name), toNumber: $json.primary_contact_phone, plan: $('Trigger: From WF-4').item.json.plan_tier, healthScore: $('Trigger: From WF-4').item.json.health_score, goal: ($('Trigger: From WF-4').item.json.success_metric || $('Trigger: From WF-4').item.json.executive_summary || 'Churn rescue: understand the issue and retain the account.'), notes: $('Trigger: From WF-4').item.json.call_script } }) }}",
         "options": {}
       },
-      "id": "a1b2c3d4-0002-4000-8000-000000000002",
+      "id": "a1b2c3d4-0003-4000-8000-000000000003",
       "name": "Dispatch to Voice Service",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [520, 400]
+      "position": [740, 400]
     }
   ],
   "pinData": {},
   "connections": {
     "Trigger: From WF-4": {
+      "main": [[{ "node": "Fetch Contact", "type": "main", "index": 0 }]]
+    },
+    "Fetch Contact": {
       "main": [[{ "node": "Dispatch to Voice Service", "type": "main", "index": 0 }]]
     }
   },
