@@ -1,0 +1,7 @@
+{
+  "extends": "@attio/config/tsconfig/react",
+  "compilerOptions": {
+    "types": ["vite/client"]
+  },
+  "include": ["src"]
+}

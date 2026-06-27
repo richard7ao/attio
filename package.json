@@ -2,18 +2,30 @@
   "name": "attio",
   "version": "0.0.0",
   "private": true,
-  "description": "Attio outreach platform monorepo.",
-  "workspaces": [
-    "apps/frontend/*",
-    "apps/backend/*",
-    "packages/*"
-  ],
-  "scripts": {
-    "lint": "echo \"add per-app lint scripts\" && exit 0",
-    "build": "echo \"add per-app build scripts\" && exit 0",
-    "dev": "echo \"add per-app dev scripts\" && exit 0"
-  },
+  "description": "Attio CRM extension — enterprise account management, upselling & renewal triage.",
+  "packageManager": "pnpm@9.12.0",
   "engines": {
-    "node": ">=20"
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "db:generate": "pnpm --filter @attio/db db:generate",
+    "db:migrate": "pnpm --filter @attio/db db:migrate",
+    "db:studio": "pnpm --filter @attio/db db:studio"
+  },
+  "devDependencies": {
+    "@attio/config": "workspace:*",
+    "eslint": "^9.11.1",
+    "prettier": "^3.3.3",
+    "turbo": "^2.1.3",
+    "typescript": "^5.6.2"
   }
 }
