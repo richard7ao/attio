@@ -4,6 +4,12 @@ import { z } from 'zod';
 // Single source of truth is the repo-root .env; allow an app-local override.
 loadEnv({ path: ['../../.env', '.env'] });
 
+// Treat empty .env values ("FOO=") as unset for optional fields.
+const optionalSecret = z.preprocess(
+  (v) => (v === '' ? undefined : v),
+  z.string().min(1).optional(),
+);
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().default(3001),
@@ -12,12 +18,16 @@ const envSchema = z.object({
 
   // Database (see packages/db)
   DATABASE_DRIVER: z.enum(['sqlite', 'postgres']).default('sqlite'),
-  DATABASE_URL: z.string().optional(),
+  DATABASE_URL: optionalSecret,
   SQLITE_PATH: z.string().default('./data/attio.local.db'),
 
   // Attio CRM
-  ATTIO_API_KEY: z.string().min(1).optional(),
+  ATTIO_API_KEY: optionalSecret,
   ATTIO_API_BASE_URL: z.string().url().default('https://api.attio.com/v2'),
+
+  // Stripe
+  STRIPE_API_KEY: optionalSecret,
+  STRIPE_WEBHOOK_SECRET: optionalSecret,
 });
 
 /** Parsed, validated environment. Fails fast on misconfiguration. */

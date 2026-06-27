@@ -1,0 +1,29 @@
+{
+  "name": "@attio/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Long-running worker: LISTENs for company changes and recomputes churn.",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup",
+    "start": "node dist/index.js",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@attio/db": "workspace:*",
+    "@attio/shared": "workspace:*",
+    "dotenv": "^16.4.5",
+    "postgres": "^3.4.4"
+  },
+  "devDependencies": {
+    "@attio/config": "workspace:*",
+    "@types/node": "^22.7.4",
+    "eslint": "^9.11.1",
+    "tsup": "^8.3.0",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2"
+  }
+}

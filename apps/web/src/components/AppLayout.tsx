@@ -4,6 +4,7 @@ const navItems = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/triage/bad', label: 'Churn Triage' },
   { to: '/triage/good', label: 'Upsell Triage' },
+  { to: '/simulator', label: 'Simulator' },
   { to: '/auditing', label: 'Auditing' },
 ];
 

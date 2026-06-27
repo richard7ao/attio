@@ -15,6 +15,13 @@
       "when": 1782561571574,
       "tag": "0001_young_alex_wilder",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1782563760954,
+      "tag": "0002_sturdy_dazzler",
+      "breakpoints": true
     }
   ]
 }

@@ -23,6 +23,8 @@ service-account.json
 *.sqlite
 *.sqlite3
 *.db
+*.db-shm
+*.db-wal
 *.local.db
 apps/api/data/
 

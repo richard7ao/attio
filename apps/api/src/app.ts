@@ -4,6 +4,7 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import { config } from './config.js';
 import { dbPlugin } from './plugins/db.js';
 import { attioRoutes } from './modules/attio/index.js';
+import { churnRoutes } from './modules/churn/index.js';
 import { healthRoutes } from './modules/health/index.js';
 import { outreachRoutes } from './modules/outreach/index.js';
 import { triageRoutes } from './modules/triage/index.js';
@@ -28,6 +29,7 @@ export async function buildApp(): Promise<FastifyInstance> {
       await api.register(outreachRoutes);
       await api.register(triageRoutes);
       await api.register(attioRoutes);
+      await api.register(churnRoutes);
       await api.register(voiceRoutes);
       await api.register(webhookRoutes);
     },

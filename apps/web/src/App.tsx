@@ -7,6 +7,7 @@ import { Auditing } from './routes/Auditing.js';
 import { TriageGood } from './routes/TriageGood.js';
 import { TriageBad } from './routes/TriageBad.js';
 import { AllReachOuts } from './routes/AllReachOuts.js';
+import { Simulator } from './routes/Simulator.js';
 
 export function App() {
   return (
@@ -18,6 +19,7 @@ export function App() {
         <Route path="/auditing" element={<Auditing />} />
         <Route path="/triage/good" element={<TriageGood />} />
         <Route path="/triage/bad" element={<TriageBad />} />
+        <Route path="/simulator" element={<Simulator />} />
         <Route path="/users/:userId/reach-outs" element={<AllReachOuts />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

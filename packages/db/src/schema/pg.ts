@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
+  boolean,
   doublePrecision,
   integer,
   jsonb,
@@ -117,4 +118,45 @@ export const attioCustomerSuccess = pgTable('attio_customer_success', {
   notes: text('notes'),
   createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }),
   syncedAt: timestamp('synced_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ---------------------------------------------------------------------------
+// Churn engine: incoming signals, derived per-company state, and the
+// escalation outbox consumed by the voice-call poller. Keep in sync with
+// sqlite.ts. A trigger on company_signals/company_churn emits pg_notify
+// (see custom migration) which the long-running worker LISTENs on.
+// ---------------------------------------------------------------------------
+
+export const companySignals = pgTable('company_signals', {
+  id: text('id').primaryKey(),
+  companyId: text('company_id').notNull(),
+  source: text('source', { enum: ['stripe', 'usage', 'support', 'mubit', 'manual'] }).notNull(),
+  type: text('type', { enum: ['stripe_cancellation', 'usage_drop', 'support_ticket'] }).notNull(),
+  active: boolean('active').notNull().default(true),
+  value: doublePrecision('value'),
+  metadata: jsonb('metadata')
+    .notNull()
+    .default(sql`'{}'::jsonb`),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const companyChurn = pgTable('company_churn', {
+  companyId: text('company_id').primaryKey(),
+  score: doublePrecision('score').notNull().default(0),
+  status: text('status', { enum: ['red', 'amber', 'green'] })
+    .notNull()
+    .default('green'),
+  reason: text('reason'),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const escalations = pgTable('escalations', {
+  id: text('id').primaryKey(),
+  companyId: text('company_id').notNull(),
+  status: text('status', { enum: ['red', 'amber', 'green'] }).notNull(),
+  score: doublePrecision('score').notNull(),
+  reason: text('reason'),
+  acked: boolean('acked').notNull().default(false),
+  ackedAt: timestamp('acked_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
