@@ -9,7 +9,7 @@ function usePageTitle(): string {
   const { accountById } = useCockpit();
   if (pathname === '/dashboard') return 'Health Dashboard';
   if (pathname === '/feed') return 'Action Agent';
-  if (pathname === '/calls') return 'Call Log';
+  if (pathname === '/calls') return 'Call Transcripts';
   if (pathname === '/accounts') return 'Accounts';
   if (pathname === '/signals') return 'Signals';
   if (pathname === '/settings') return 'Settings';

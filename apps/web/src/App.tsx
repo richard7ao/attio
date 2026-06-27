@@ -7,11 +7,11 @@ import { HowItWorksPage } from './cockpit/pages/HowItWorksPage.js';
 import { AttioPage } from './cockpit/pages/AttioPage.js';
 import { DashboardPage } from './cockpit/pages/DashboardPage.js';
 import { FeedPage } from './cockpit/pages/FeedPage.js';
-import { CallLogPage } from './cockpit/pages/CallLogPage.js';
 import { AccountsPage } from './cockpit/pages/AccountsPage.js';
 import { SignalsPage } from './cockpit/pages/SignalsPage.js';
 import { SettingsPage } from './cockpit/pages/SettingsPage.js';
 import { AccountProfilePage } from './cockpit/pages/AccountProfilePage.js';
+import { CallsPage } from './cockpit/pages/CallsPage.js';
 // Standalone operator pages (not part of the cockpit nav) — reachable by direct URL.
 import { Simulator } from './routes/Simulator.js';
 import { TriageBad } from './routes/TriageBad.js';
@@ -30,7 +30,7 @@ export function App() {
         <Route element={<AppShell />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/feed" element={<FeedPage />} />
-          <Route path="/calls" element={<CallLogPage />} />
+          <Route path="/calls" element={<CallsPage />} />
           <Route path="/accounts" element={<AccountsPage />} />
           <Route path="/signals" element={<SignalsPage />} />
           <Route path="/settings" element={<SettingsPage />} />

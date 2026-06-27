@@ -13,7 +13,7 @@ interface NavItem {
 const WORKSPACE: NavItem[] = [
   { to: '/dashboard', label: 'Dashboard', icon: 'layout-dashboard', matches: (p) => p === '/dashboard' },
   { to: '/feed', label: 'Action Feed', icon: 'inbox', matches: (p) => p === '/feed' },
-  { to: '/calls', label: 'Call Log', icon: 'phone-call', matches: (p) => p === '/calls' },
+  { to: '/calls', label: 'Call Transcripts', icon: 'phone-call', matches: (p) => p === '/calls' },
   { to: '/accounts', label: 'Accounts', icon: 'users', matches: (p) => p === '/accounts' || p.startsWith('/account/') },
 ];
 const SYSTEM: NavItem[] = [

@@ -9,6 +9,7 @@
     "build": "tsup",
     "start": "node dist/server.js",
     "sync:attio": "tsx src/scripts/sync-attio.ts",
+    "seed:voice": "tsx src/scripts/seed-voice.ts",
     "superlink:pool": "tsx src/scripts/superlink-pool.ts",
     "register:attio-webhooks": "tsx src/scripts/register-attio-webhooks.ts",
     "lint": "eslint .",
