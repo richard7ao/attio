@@ -1,3 +1,11 @@
+// Polyfill WebSocket for Node < 22 — @supabase/realtime-js requires native
+// WebSocket (only in Node 22+) or a `ws` fallback. Without this, createClient
+// crashes on Node 20 with "Node.js 20 detected without native WebSocket support".
+import WebSocket from "ws";
+if (typeof (globalThis as any).WebSocket === "undefined") {
+  (globalThis as any).WebSocket = WebSocket;
+}
+
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { config, requireEnv } from "./config.js";
 import { log } from "./logger.js";
@@ -116,6 +124,32 @@ export async function syncOutreachFromCall(call: VoiceCall): Promise<void> {
     })
     .eq("id", call.outreach_id);
   if (error) log.error({ err: error }, "failed to sync outreach from call");
+}
+
+/**
+ * Upsert a customer into churn_rescue_queue with a post-call status.
+ * Called by the SLNG call_end listener:
+ *   - completed (real conversation) -> 'new_renewal' (pending renewal action)
+ *   - non-conversation outcomes          -> 'monitor'    (watch + retry)
+ * No-op when accountId is absent (can't link the call to a customer).
+ */
+export async function upsertChurnRescueStatus(
+  accountId: string,
+  status: "new_renewal" | "monitor",
+  companyName?: string | null,
+): Promise<void> {
+  const { error } = await db()
+    .from("churn_rescue_queue")
+    .upsert(
+      {
+        account_id: accountId,
+        company_name: companyName ?? null,
+        status,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "account_id" },
+    );
+  if (error) log.error({ err: error, accountId, status }, "failed to upsert churn_rescue_queue");
 }
 
 export async function getVoiceCall(id: string): Promise<VoiceCall | null> {
