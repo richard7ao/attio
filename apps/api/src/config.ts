@@ -40,6 +40,8 @@ const envSchema = z.object({
   // Stripe
   STRIPE_API_KEY: optionalSecret,
   STRIPE_WEBHOOK_SECRET: optionalSecret,
+  // Where the customer lands after exiting the Stripe Billing Portal.
+  STRIPE_PORTAL_RETURN_URL: optionalSecret,
   // Recurring price used when linking Attio companies to Stripe (test mode).
   // If unset, the link service creates a product + price on first use.
   STRIPE_PRICE_ID: optionalSecret,

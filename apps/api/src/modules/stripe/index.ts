@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { stripeEnabled } from './client.js';
 import {
   cancelCompanySubscription,
+  createCustomerPortalSession,
   linkCompanies,
   linkCompanyById,
   listLinked,
@@ -35,7 +36,21 @@ export async function stripeRoutes(app: FastifyInstance): Promise<void> {
     return { ok: true, linked };
   });
 
-  // Cancel a company's Stripe subscription (real Stripe action -> webhook).
+  // Customer-side self-serve cancellation: opens the Stripe Billing Portal where
+  // the customer cancels their own plan. The resulting webhook flips churn to red.
+  app.post('/stripe/companies/:id/portal', async (request, reply) => {
+    if (!stripeEnabled()) return reply.serviceUnavailable('STRIPE_API_KEY not configured');
+    const { id } = request.params as { id: string };
+    try {
+      const { url } = await createCustomerPortalSession(id);
+      return { ok: true, url };
+    } catch (err) {
+      return reply.badRequest((err as Error).message);
+    }
+  });
+
+  // Admin-side cancel (merchant cancels the subscription directly). Kept for
+  // automation/testing — the simulator uses the customer portal flow instead.
   app.post('/stripe/companies/:id/cancel', async (request, reply) => {
     if (!stripeEnabled()) return reply.serviceUnavailable('STRIPE_API_KEY not configured');
     const { id } = request.params as { id: string };

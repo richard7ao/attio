@@ -9,6 +9,7 @@ import {
   getTranscript,
   syncOutreachFromCall,
   updateVoiceCall,
+  upsertChurnRescueStatus,
 } from "../db.js";
 import { getBrain } from "../agent/brain.js";
 import { publish } from "../sse.js";
@@ -167,6 +168,17 @@ async function handleCallEnd(callId: string, body: any): Promise<void> {
     duration_ms: durationMs,
   });
   await syncOutreachFromCall(updated);
+
+  // Place the customer in the churn-rescue queue with a post-call status:
+  //   completed (real conversation) -> 'new_renewal' (pending renewal action)
+  //   non-conversation outcomes     -> 'monitor'     (watch + retry)
+  if (updated.account_id) {
+    await upsertChurnRescueStatus(
+      updated.account_id,
+      status === "completed" ? "new_renewal" : "monitor",
+      updated.account_name,
+    );
+  }
 
   publish(callId, "status", { status });
   publish(callId, "ended", {

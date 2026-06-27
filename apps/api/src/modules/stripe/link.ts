@@ -138,3 +138,29 @@ export async function cancelCompanySubscription(companyId: string): Promise<{ st
   );
   return { status: sub.status };
 }
+
+interface BillingPortalSession {
+  url: string;
+}
+
+/**
+ * Create a Stripe Billing Portal session for the customer — this is the
+ * **customer-side** self-serve cancellation flow. The returned URL opens
+ * Stripe's hosted portal where the customer can cancel their own plan.
+ * When they cancel, the same `customer.subscription.deleted` webhook fires.
+ */
+export async function createCustomerPortalSession(companyId: string): Promise<{ url: string }> {
+  const link = await getCompanyStripeIds(companyId);
+  if (!link?.stripeCustomerId) {
+    throw new Error(`Company ${companyId} is not linked to a Stripe customer`);
+  }
+  const session = await stripeRequest<BillingPortalSession>(
+    'POST',
+    '/billing_portal/sessions',
+    {
+      customer: link.stripeCustomerId,
+      return_url: config.STRIPE_PORTAL_RETURN_URL ?? 'https://attio-tools.vercel.app/simulator',
+    },
+  );
+  return { url: session.url };
+}
